@@ -1,0 +1,276 @@
+{% extends 'Layout/base.html' %}
+{% block content %}
+
+<div class="vocab-app" id="app">
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-head">
+            <p class="brand">Từ vựng TOEIC</p>
+            <div class="brand-mark"></div>
+            <p class="brand-sub">Chọn một chủ đề để học</p>
+            <label class="is-hidden" for="topic-search">Tìm chủ đề</label>
+            <input id="topic-search" class="search" type="search" placeholder="Tìm chủ đề" autocomplete="off">
+        </div>
+        <div class="topic-scroll" id="topic-scroll">
+            {% for i in topic %}
+            <button type="button" class="topic-link" data-index="{{ loop.index0 }}"
+                    data-search="{{ i.topic_en }} {{ i.topic_vi }}">
+                <span class="num">{{ '%02d' % i.id }}</span>
+                <span>
+                    <span class="en">{{ i.topic_en }}</span>
+                    <span class="vi">{{ i.topic_vi }} · {{ i.words | length }} từ</span>
+                </span>
+            </button>
+            {% endfor %}
+        </div>
+    </aside>
+
+    <div class="backdrop" id="backdrop"></div>
+
+    <main class="study">
+        <div class="study-inner">
+            <button type="button" class="ctrl sidebar-toggle" id="sidebar-toggle">Danh sách chủ đề</button>
+
+            <div class="study-top">
+                <div>
+                    <p class="kicker" id="head-id"></p>
+                    <h2 class="topic-title" id="head-en"></h2>
+                    <p class="topic-sub" id="head-vi"></p>
+                </div>
+                <div class="counter" id="head-counter"></div>
+            </div>
+            <div class="track" aria-hidden="true"><span id="progress"></span></div>
+
+            <div class="scene">
+                <div class="flashcard" id="card">
+                    <div class="face front">
+                        <div class="word-line">
+                            <div>
+                                <div class="card-word" id="f-word"></div>
+                                <div class="card-ipa" id="f-ipa"></div>
+                                <div class="pos" id="f-pos"></div>
+                            </div>
+                            <button type="button" class="icon-btn" id="speak" title="Nghe từ" aria-label="Nghe từ">
+                                <svg viewBox="0 0 24 24" aria-hidden="true">
+                                    <path fill="currentColor" d="M4 10v4h3.2L12 18.5V5.5L7.2 10H4z"/>
+                                    <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M15.5 9.5a3.5 3.5 0 0 1 0 5M17.8 7.2a6.5 6.5 0 0 1 0 9.6"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="hint">Bấm thẻ hoặc phím cách để xem nghĩa</div>
+                    </div>
+                    <div class="face back">
+                        <div class="back-section">
+                            <div class="back-label">Ý nghĩa</div>
+                            <div class="meaning" id="b-meaning"></div>
+                        </div>
+                        <div class="back-section" id="sec-ex">
+                            <div class="back-label">Ví dụ</div>
+                            <div id="b-examples"></div>
+                        </div>
+                        <div class="back-section" id="sec-usage">
+                            <div class="back-label">Cách dùng</div>
+                            <div class="usage" id="b-usage"></div>
+                        </div>
+                        <div class="back-section" id="sec-syn">
+                            <div class="back-label">Từ đồng nghĩa</div>
+                            <div id="b-syn"></div>
+                        </div>
+                        <div class="back-section" id="sec-fam">
+                            <div class="back-label">Họ từ</div>
+                            <div id="b-fam"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button type="button" class="ctrl" id="prev">Trước</button>
+                <button type="button" class="ctrl" id="flip">Lật thẻ</button>
+                <button type="button" class="ctrl" id="shuffle">Trộn</button>
+                <button type="button" class="ctrl primary" id="next">Tiếp</button>
+            </div>
+            <p class="keys">← → chuyển từ · Space lật thẻ</p>
+        </div>
+    </main>
+</div>
+
+<script>
+    const topics = {{ topic | tojson }};
+    const PALETTE = ['#6d28d9', '#c026d3', '#db2777', '#d97706', '#4f46e5', '#0f766e'];
+    const $ = id => document.getElementById(id);
+    const card = $('card');
+    const links = document.querySelectorAll('.topic-link');
+    const SPEAK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 10v4h3.2L12 18.5V5.5L7.2 10H4z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M15.5 9.5a3.5 3.5 0 0 1 0 5M17.8 7.2a6.5 6.5 0 0 1 0 9.6"/></svg>';
+
+    let t = 0, order = [], c = 0;
+
+    const toList = v => (Array.isArray(v) ? v : (v ? [v] : []))
+        .map(x => typeof x === 'string' ? x : Object.values(x).join(' · '));
+
+    function examplesOf(w) {
+        if (Array.isArray(w.examples) && w.examples.length) {
+            return w.examples.map(ex => typeof ex === 'string'
+                ? { en: ex, vi: '' }
+                : { en: ex.en || ex.example_en || '', vi: ex.vi || ex.example_vi || '' }
+            ).filter(ex => ex.en || ex.vi);
+        }
+        if (w.example_en || w.example_vi) return [{ en: w.example_en || '', vi: w.example_vi || '' }];
+        return [];
+    }
+
+    function fillChips(el, list) {
+        el.replaceChildren();
+        list.forEach(s => {
+            const sp = document.createElement('span');
+            sp.className = 'chip';
+            sp.textContent = s;
+            el.appendChild(sp);
+        });
+    }
+
+    function renderExamples(list) {
+        const box = $('b-examples');
+        box.replaceChildren();
+        $('sec-ex').classList.toggle('is-hidden', !list.length);
+        list.forEach(ex => {
+            const row = document.createElement('div');
+            row.className = 'example';
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'icon-btn';
+            btn.title = 'Nghe ví dụ';
+            btn.setAttribute('aria-label', 'Nghe ví dụ');
+            btn.innerHTML = SPEAK_SVG;
+            btn.disabled = !ex.en;
+            btn.addEventListener('click', e => { e.stopPropagation(); speak(ex.en); });
+            const text = document.createElement('div');
+            const en = document.createElement('p');
+            en.className = 'ex-en';
+            en.textContent = ex.en;
+            const vi = document.createElement('p');
+            vi.className = 'ex-vi';
+            vi.textContent = ex.vi;
+            if (!ex.vi) vi.classList.add('is-hidden');
+            text.append(en, vi);
+            row.append(btn, text);
+            box.appendChild(row);
+        });
+    }
+
+    function wordAt() {
+        const tp = topics[t];
+        return tp && tp.words ? tp.words[order[c]] : null;
+    }
+
+    function setSidebar(open) {
+        $('sidebar').classList.toggle('open', open);
+        $('backdrop').classList.toggle('show', open);
+    }
+
+    function loadTopic(idx, pushHash = true) {
+        if (!topics.length) {
+            $('head-en').textContent = 'Chưa có chủ đề';
+            return;
+        }
+        t = Math.max(0, Math.min(idx, topics.length - 1));
+        const tp = topics[t];
+        order = (tp.words || []).map((_, k) => k);
+        c = 0;
+        $('app').style.setProperty('--topic', PALETTE[t % PALETTE.length]);
+        links.forEach(l => l.classList.toggle('active', +l.dataset.index === t));
+        const active = links[t];
+        $('head-id').textContent = 'Chủ đề ' + tp.id;
+        $('head-en').textContent = tp.topic_en || '';
+        $('head-vi').textContent = tp.topic_vi || '';
+        if (active) active.scrollIntoView({ block: 'nearest' });
+        if (pushHash) history.replaceState(null, '', '#topic-' + tp.id);
+        setSidebar(false);
+        render();
+    }
+
+    function render() {
+        const tp = topics[t];
+        if (!tp) return;
+        card.classList.remove('flipped');
+        const w = wordAt();
+        $('head-counter').textContent = order.length ? (c + 1) + ' / ' + order.length : '0 / 0';
+        $('progress').style.width = (order.length ? (c + 1) / order.length * 100 : 0) + '%';
+        if (!w) {
+            $('f-word').textContent = 'Chủ đề chưa có từ';
+            $('f-ipa').textContent = '';
+            $('f-pos').textContent = '';
+            $('b-meaning').textContent = '';
+            renderExamples([]);
+            return;
+        }
+        $('f-word').textContent = w.word || '';
+        $('f-ipa').textContent = w.ipa || '';
+        $('f-pos').textContent = w.pos || '';
+        $('b-meaning').textContent = w.meaning || '';
+        renderExamples(examplesOf(w));
+        const usage = w.usage || '';
+        $('b-usage').textContent = usage;
+        $('sec-usage').classList.toggle('is-hidden', !usage);
+        const syn = toList(w.synonyms), fam = toList(w.word_family);
+        fillChips($('b-syn'), syn);
+        $('sec-syn').classList.toggle('is-hidden', !syn.length);
+        fillChips($('b-fam'), fam);
+        $('sec-fam').classList.toggle('is-hidden', !fam.length);
+    }
+
+    const next = () => {
+        if (c < order.length - 1) { c++; render(); }
+        else if (t < topics.length - 1) loadTopic(t + 1);
+    };
+    const prev = () => {
+        if (c > 0) { c--; render(); }
+        else if (t > 0) { loadTopic(t - 1); c = Math.max(0, order.length - 1); render(); }
+    };
+    const flip = () => card.classList.toggle('flipped');
+
+    function shuffle() {
+        for (let i = order.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [order[i], order[j]] = [order[j], order[i]];
+        }
+        c = 0;
+        render();
+    }
+
+    function speak(text) {
+        if (!text || !('speechSynthesis' in window)) return;
+        speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'en-US';
+        u.rate = 0.9;
+        speechSynthesis.speak(u);
+    }
+
+    card.addEventListener('click', flip);
+    $('speak').addEventListener('click', e => { e.stopPropagation(); const w = wordAt(); if (w) speak(w.word); });
+    $('next').addEventListener('click', next);
+    $('prev').addEventListener('click', prev);
+    $('flip').addEventListener('click', flip);
+    $('shuffle').addEventListener('click', shuffle);
+    links.forEach(l => l.addEventListener('click', () => loadTopic(+l.dataset.index)));
+    $('sidebar-toggle').addEventListener('click', () => setSidebar(!$('sidebar').classList.contains('open')));
+    $('backdrop').addEventListener('click', () => setSidebar(false));
+
+    document.addEventListener('keydown', e => {
+        if (e.target.tagName === 'INPUT') return;
+        if (e.key === 'ArrowRight') next();
+        else if (e.key === 'ArrowLeft') prev();
+        else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); }
+    });
+
+    const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
+    $('topic-search').addEventListener('input', e => {
+        const q = norm(e.target.value.trim());
+        links.forEach(l => l.classList.toggle('is-hidden', !norm(l.dataset.search || '').includes(q)));
+    });
+
+    const m = location.hash.match(/topic-(\d+)/);
+    const start = m ? topics.findIndex(x => String(x.id) === m[1]) : 0;
+    loadTopic(start >= 0 ? start : 0, false);
+</script>
+{% endblock %}

@@ -1,0 +1,14 @@
+[
+  {
+    "href": "/topics",
+    "img":"static/img/dbbfbfe0-45e7-4ffb-98e8-44053ac47d63.jpg",
+    "tieude":"600 từ vựng thông dụng Toeic",
+    "mota":"Từ vựng thường xuất hiện trong part 5"
+  },
+  {
+    "href": "/ai-quiz",
+    "img":"static/img/toeic-smartcom-english_optimized-1200x900.jpg",
+    "tieude":"Kiểm tra từ vựng đã học",
+    "mota":"Kiểm tra bằng cách cho AI generate các câu hỏi"
+  }
+]

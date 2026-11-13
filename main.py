@@ -1,15 +1,25 @@
 import os
 from dotenv import load_dotenv
 from flask import Flask, render_template, url_for, redirect, session
-from flask_login import LoginManager, login_user
+from flask_login import LoginManager, login_user, current_user
 from authlib.integrations.flask_client import OAuth
-from model import User, db,app
+from model import User, db, app, Word, Topic
 import dao
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
+
 
 load_dotenv()
 login_manager = LoginManager(app)
 oauth = OAuth(app)
 app.secret_key="NMT"
+
+# -------------# quan tri admin
+admin = Admin(app, name="Quản trị TOEIC AI")
+class AuthenticatedView(ModelView):
+    def is_accessible(self):
+        return current_user.is_authenticated and current_user.active == True
+admin.add_view(AuthenticatedView(User, db.session))
 
 
 google = oauth.register(
@@ -85,7 +95,31 @@ def ToeicTesterAI():
 @app.route('/thongtin')
 def thongtin():
     return render_template('thongtin.html')
-
+@app.route('/topics')
+def topics():
+    # topic=dao.getList()
+    # #
+    # for i in topic_list:
+    #     # Dùng DẤU CHẤM vì i là đối tượng (Object) từ Database
+    #     print(i.id)  # (Hoặc i.topic_id tùy thuộc vào tên cột bạn khai báo trong model)
+    #
+    #     # Nếu muốn in từ vựng bên trong:
+    #     for x in i.words:
+    #         print(x.word)
+    rows = Topic.query.order_by(Topic.id).all()  # đổi tên model cho đúng với bạn
+    topic = [{
+        "id": t.id,
+        "topic_en": t.topic_en,
+        "topic_vi": t.topic_vi,
+        "words": [{
+            "word": w.word, "ipa": w.ipa, "pos": w.pos,
+            "meaning": w.meaning,
+            "example_en": w.example_en, "example_vi": w.example_vi,
+            "usage": w.usage,
+            "synonyms": w.synonyms, "word_family": w.word_family,
+        } for w in t.words],
+    } for t in rows]
+    return render_template('topic.html',topic = topic)
 @app.route('/logout')
 def logout():
     session.clear()
