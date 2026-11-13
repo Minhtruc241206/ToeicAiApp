@@ -1,0 +1,127 @@
+{%extends 'Layout/base.html'%}
+{%block content%}
+<body class="min-h-screen flex flex-col">
+
+    <main class="app-main flex-grow w-full max-w-4xl mx-auto p-4 sm:p-6 relative">
+
+        <!-- Toast Notification Container -->
+        <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+        <!-- VIEW 1: Setup Section -->
+        <div id="view-setup" class="card setup">
+            <section class="step">
+                <div class="step__head">
+                    <span class="step__num">1</span>
+                    <div>
+                        <h2 class="step__title">Configuration</h2>
+                        <p class="step__desc">Nhập API của Gemini vào đây để tạo câu hỏi</p>
+                    </div>
+                </div>
+                <div class="field">
+                    <svg class="field__icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+                    <input type="password" id="api-key-input" class="input input--icon" placeholder="AIzaSy...">
+                </div>
+                <p class="hint">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                    <span>Khóa API của bạn chỉ được sử dụng cục bộ trong trình duyệt để kết nối với API của Google.</span>
+                </p>
+            </section>
+
+            <section class="step">
+                <div class="step__head">
+                    <span class="step__num">2</span>
+                    <div>
+                        <h2 class="step__title">Vocabulary List</h2>
+                        <p class="step__desc">Dán từ vựng muốn kiểm tra vào để AI tạo câu hỏi</p>
+                    </div>
+                </div>
+
+                <textarea id="vocab-input" class="input" placeholder="Example: negotiation, characteristic, variety, implementation, temporary, satisfaction..."></textarea>
+                <p class="hint">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    <span>Phân tách các từ bằng dấu phẩy hoặc xuống dòng. Một bài kiểm tra bao gồm tối đa 10 câu hỏi.</span>
+                </p>
+
+                <div class="actions">
+                    <button id="btn-generate" class="btn btn-primary">
+                        <span>Tạo câu hỏi</span>
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <!-- VIEW 2: Loading State -->
+        <div id="view-loading" class="hidden card loading">
+            <div class="spinner"></div>
+            <h3 class="loading__title">Đang tạo TOEIC Quiz...</h3>
+            <p class="loading__text">Ai sẽ tạo chủ đề liên quan tới part 5 trong đề thi TOEIC.</p>
+        </div>
+
+        <!-- VIEW 3: Quiz Section -->
+        <div id="view-quiz" class="hidden">
+            <div class="quiz-bar">
+                <div class="quiz-bar__title">
+                    <span class="quiz-bar__icon">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path></svg>
+                    </span>
+                    <h2>Vocabulary Test</h2>
+                </div>
+                <div class="quiz-bar__count">
+                    <span id="current-q-count">0</span><span>/</span><span id="total-q-count">0</span>
+                </div>
+            </div>
+
+            <div id="quiz-container" class="quiz-list">
+                <!-- Quiz questions dynamically injected here -->
+            </div>
+
+            <div class="finish-wrap">
+                <p class="finish-hint">Trả lời hết để xem đáp án.</p>
+                <button id="btn-finish" class="bg-slate-300 text-slate-500 cursor-not-allowed font-bold py-4 px-10 rounded-xl shadow-sm transition-colors text-lg" disabled>
+                    <span>Finish Quiz &amp; See Results</span>
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- VIEW 4: Results Section -->
+        <div id="view-results" class="hidden">
+            <div class="card results-hero">
+                <span class="results-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </span>
+                <h2 class="results-title">Quiz Completed!</h2>
+                <p class="results-sub">Here is how you did. Review every question below to learn from it.</p>
+
+                <div class="stats">
+                    <div class="stat">
+                        <span class="stat__num" id="res-total">0</span>
+                        <span class="stat__label">Total</span>
+                    </div>
+                    <div class="stat stat--ok">
+                        <span class="stat__num" id="res-correct">0</span>
+                        <span class="stat__label">Correct</span>
+                    </div>
+                    <div class="stat stat--bad">
+                        <span class="stat__num" id="res-incorrect">0</span>
+                        <span class="stat__label">Incorrect</span>
+                    </div>
+                    <div class="stat stat--brand">
+                        <span class="stat__num" id="res-accuracy">0%</span>
+                        <span class="stat__label">Accuracy</span>
+                    </div>
+                </div>
+
+                <button id="btn-restart" class="btn btn-secondary">Create New Quiz</button>
+            </div>
+
+            <div id="mistakes-container" class="review-list">
+                <!-- Explanations injected here -->
+            </div>
+        </div>
+
+    </main>
+
+</body>
+{%endblock%}

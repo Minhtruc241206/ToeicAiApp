@@ -1,0 +1,48 @@
+{%extends 'Layout/base.html'%}
+{%block content%}
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+<section id="dashboard-section" class="fade-up">
+
+            <!-- Thanh thông tin người dùng -->
+    <div class="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-100 shadow-sm mb-8">
+        <div class="flex items-center gap-4">
+            <img src="{{ current_user.picture }}"
+                 alt="{{ current_user.username }}"
+                 referrerpolicy="no-referrer"
+                 class="w-14 h-14 rounded-full object-cover ring-2 ring-indigo-100">
+            <div>
+                <p class="text-sm text-slate-500">Xin chào,</p>
+                <h2 class="text-xl font-bold leading-tight">{{ current_user.name }}</h2>
+            </div>
+        </div>
+
+        <a href="/logout"
+           class="px-4 py-2 text-sm font-medium text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition">
+            Đăng xuất
+        </a>
+    </div>
+
+            <h2 class="text-2xl font-bold mb-1">Chọn tính năng học tập</h2>
+            <p id="welcome-text" class="text-slate-500 mb-6"></p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                {%for i in data%}
+                    <a href="{{i.href}}" class="group bg-white p-6 rounded-xl border border-slate-100 shadow-sm hover:shadow-lg hover:-translate-y-1 transition block">
+                <!-- Khung bọc giúp bo góc và tạo hiệu ứng zoom nhẹ khi di chuột -->
+                    <div class="w-full h-44 overflow-hidden rounded-lg mb-4">
+                        <img src="{{i.img}}"
+                             alt="{{i.tieude}}"
+                             class="w-full h-full object-cover object-center group-hover:scale-105 transition duration-300">
+                    </div>
+
+                    <h3 class="font-bold text-lg">{{i.tieude}}</h3>
+                    <p class="text-slate-500 text-sm mt-1">{{i.mota}}</p>
+                </a>
+                {%endfor%}
+                <!-- ➕ CARD MỚI SAU NÀY CỨ THÊM VÀO ĐÂY -->
+            </div>
+        </section>
+</body>
+
+{%endblock%}

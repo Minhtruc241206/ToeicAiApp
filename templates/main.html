@@ -1,0 +1,63 @@
+{%extends 'Layout/base.html'%}
+{%block content%}
+
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+
+
+    <main class="flex-1 max-w-6xl w-full mx-auto p-6">
+
+        <!-- KHU VỰC 1: ĐĂNG NHẬP -->
+        <section id="login-section" class="login-bg rounded-3xl py-10 sm:py-16 flex justify-center">
+            <div class="fade-up w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-100 p-8 sm:p-10 text-center">
+
+                <div class="mx-auto w-16 h-16 rounded-2xl overflow-hidden shadow-lg">
+                <img
+                    src="/static/img/bc42385225b6f42babcd6a65b914752c.jpg"
+                    alt="Logo"
+                    class="w-full h-full object-cover"
+                >
+            </div>
+
+                <h2 class="mt-6 text-2xl font-extrabold text-slate-900">Chào mừng đến với dự án nhỏ của mình👋</h2>
+                <p class="mt-2 text-slate-500 text-sm leading-relaxed">
+                    Đăng nhập để bắt đầu luyện từ vựng TOEIC cùng AI và lưu lại tiến độ học của bạn.
+                </p>
+
+                <!-- Nút Google (do Google tự render) -->
+               <div class="mt-8 flex justify-center">
+    <!-- Nút Google trỏ thẳng về route Flask của bạn -->
+    <a href="/login/google" class="flex items-center justify-center bg-white border border-slate-300 rounded-full px-6 py-2.5 text-slate-700 font-medium hover:bg-slate-50 hover:shadow-md transition shadow-sm w-[300px]">
+
+        <!-- Logo Google -->
+        <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google Logo" class="w-5 h-5 mr-3">
+
+        <span>Đăng nhập bằng Google</span>
+    </a>
+</div>
+
+                <!-- Điểm nổi bật -->
+                <div class="mt-8 pt-6 border-t border-slate-100 grid grid-cols-3 gap-3 text-xs text-slate-500">
+                    <div class="flex flex-col items-center gap-1.5">
+                        <span class="w-9 h-9 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center text-base">📚</span>
+                        600 từ vựng
+                    </div>
+                    <div class="flex flex-col items-center gap-1.5">
+                        <span class="w-9 h-9 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center text-base">🤖</span>
+                        Tạo Đề thi bằng AI
+                    </div>
+                    <div class="flex flex-col items-center gap-1.5">
+                        <span class="w-9 h-9 rounded-lg bg-violet-50 text-violet-600 flex items-center justify-center text-base">📈</span>
+                        Lưu tiến độ
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+    </main>
+
+</body>
+
+
+{%endblock%}

@@ -1,0 +1,15 @@
+[
+    {
+      "tieude":"600 từ vựng thiết yếu",
+      "mota": "Học từ vựng theo chủ đề với Flashcard và AI.",
+      "img": "/static/img/dbbfbfe0-45e7-4ffb-98e8-44053ac47d63.jpg",
+      "href":"/toeic-600"
+    },
+    {
+      "tieude":"Test Từ Vựng Động (AI)",
+      "mota": "Dán danh sách từ của bạn để AI tự tạo bài thi.",
+      "img": "https://giadinh.mediacdn.vn/296230595582509056/2023/5/4/toeic1-16831725956141313509937.jpg",
+      "href":"/ai-quiz"
+    }
+
+]

@@ -1,0 +1,11 @@
+.env
+# 2. Thư mục môi trường ảo Python (rất nặng, không đẩy lên GitHub)
+.venv/
+venv/
+
+# 3. Các file cache rác do Python tự sinh ra khi chạy code
+__pycache__/
+*.py[cod]
+
+# 4. Thư mục cấu hình cá nhân của phần mềm PyCharm
+.idea/
