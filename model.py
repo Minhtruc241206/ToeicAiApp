@@ -1,10 +1,13 @@
+import os
+
 from flask import Flask, json
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, Integer, String, Double, ForeignKey, true, Boolean
 
 app = Flask(__name__)
-app.config["SQLALCHEMY_DATABASE_URI"] ="mysql+pymysql://root:root@localhost/toeic?charset=utf8mb4"
+basedir = os.path.abspath(os.path.dirname(__file__))
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(basedir, "toeic.db")
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 
 db = SQLAlchemy(app)

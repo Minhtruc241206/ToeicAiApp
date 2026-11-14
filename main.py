@@ -12,7 +12,7 @@ from flask_admin.contrib.sqla import ModelView
 load_dotenv()
 login_manager = LoginManager(app)
 oauth = OAuth(app)
-app.secret_key="NMT"
+app.secret_key="NMT241206"
 
 # -------------# quan tri admin
 admin = Admin(app, name="Quản trị TOEIC AI")
@@ -20,7 +20,8 @@ class AuthenticatedView(ModelView):
     def is_accessible(self):
         return current_user.is_authenticated and current_user.active == True
 admin.add_view(AuthenticatedView(User, db.session))
-
+admin.add_view(AuthenticatedView(Topic, db.session))
+admin.add_view(AuthenticatedView(Word, db.session))
 
 google = oauth.register(
     name='google',
@@ -78,15 +79,11 @@ def authorize():
 
 @login_manager.user_loader
 def load_user(user_id):
-    print("load_user nhận:", repr(user_id))
-    u = User.query.get(user_id)
-    print("load_user tìm được:", u)
-    return u
-
+    return User.query.get(int(user_id))
 
 @app.route('/policy')
 def policy():
-    print("session:",session)
+
     return render_template('policy.html')
 @app.route('/ai-quiz')
 def ToeicTesterAI():
