@@ -1,6 +1,6 @@
+from flask import Flask, render_template, url_for, redirect, session
 import os
 from dotenv import load_dotenv
-from flask import Flask, render_template, url_for, redirect, session
 from flask_login import LoginManager, login_user, current_user
 from authlib.integrations.flask_client import OAuth
 from model import User, db, app, Word, Topic
@@ -13,7 +13,6 @@ load_dotenv()
 login_manager = LoginManager(app)
 oauth = OAuth(app)
 app.secret_key="NMT241206"
-
 # -------------# quan tri admin
 admin = Admin(app, name="Quản trị TOEIC AI")
 class AuthenticatedView(ModelView):
@@ -83,7 +82,11 @@ def load_user(user_id):
 
 @app.route('/policy')
 def policy():
-
+    # data=dao.get50topic()
+    # for i in data:
+    #     print(i.id)
+    #     for x in i.words:
+    #         print(x.word)
     return render_template('policy.html')
 @app.route('/ai-quiz')
 def ToeicTesterAI():
@@ -94,15 +97,7 @@ def thongtin():
     return render_template('thongtin.html')
 @app.route('/topics')
 def topics():
-    # topic=dao.getList()
-    # #
-    # for i in topic_list:
-    #     # Dùng DẤU CHẤM vì i là đối tượng (Object) từ Database
-    #     print(i.id)  # (Hoặc i.topic_id tùy thuộc vào tên cột bạn khai báo trong model)
-    #
-    #     # Nếu muốn in từ vựng bên trong:
-    #     for x in i.words:
-    #         print(x.word)
+
     rows = Topic.query.order_by(Topic.id).all()  # đổi tên model cho đúng với bạn
     topic = [{
         "id": t.id,
@@ -116,6 +111,7 @@ def topics():
             "synonyms": w.synonyms, "word_family": w.word_family,
         } for w in t.words],
     } for t in rows]
+
     return render_template('topic.html',topic = topic)
 @app.route('/logout')
 def logout():

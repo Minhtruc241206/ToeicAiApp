@@ -1,108 +1,229 @@
 {% extends 'Layout/base.html' %}
 {% block content %}
 
-<div class="vocab-app" id="app">
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-head">
-            <p class="brand">Từ vựng TOEIC</p>
-            <div class="brand-mark"></div>
-            <p class="brand-sub">Chọn một chủ đề để học</p>
-            <label class="is-hidden" for="topic-search">Tìm chủ đề</label>
-            <input id="topic-search" class="search" type="search" placeholder="Tìm chủ đề" autocomplete="off">
+
+
+<div class="vocab-studio" id="app">
+    <!-- ==================== SIDEBAR: 50 CHỦ ĐỀ & TIẾN ĐỘ ==================== -->
+    <aside class="vs-sidebar" id="sidebar">
+        <div class="vs-sidebar-top">
+            <div class="mastery-card">
+                <div class="mastery-head">
+                    <span>🎯 Tiến độ 600 từ TOEIC</span>
+                    <span id="overall-percent">0%</span>
+                </div>
+                <div class="mastery-nums" id="overall-count">0 / 600 từ đã thuộc</div>
+                <div class="mastery-bar"><span id="overall-bar"></span></div>
+            </div>
+
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input id="topic-search" type="search" placeholder="Tìm nhanh chủ đề (Anh / Việt)..." autocomplete="off">
+            </div>
         </div>
-        <div class="topic-scroll" id="topic-scroll">
+
+        <div class="topic-list" id="topic-scroll">
             {% for i in topic %}
-            <button type="button" class="topic-link" data-index="{{ loop.index0 }}"
+            <button type="button" class="topic-item" data-index="{{ loop.index0 }}"
                     data-search="{{ i.topic_en }} {{ i.topic_vi }}">
-                <span class="num">{{ '%02d' % i.id }}</span>
-                <span>
-                    <span class="en">{{ i.topic_en }}</span>
-                    <span class="vi">{{ i.topic_vi }} · {{ i.words | length }} từ</span>
+                <span class="topic-badge">{{ '%02d' % i.id }}</span>
+                <span class="topic-info">
+                    <span class="topic-en">{{ i.topic_en }}</span>
+                    <span class="topic-vi">
+                        <span>{{ i.topic_vi }}</span>
+                        <span class="topic-stat-pill" data-tp-stat="{{ loop.index0 }}">0/{{ i.words | length }}</span>
+                    </span>
                 </span>
             </button>
             {% endfor %}
         </div>
     </aside>
 
-    <div class="backdrop" id="backdrop"></div>
+    <div class="vs-backdrop" id="backdrop"></div>
 
-    <main class="study">
-        <div class="study-inner">
-            <button type="button" class="ctrl sidebar-toggle" id="sidebar-toggle">Danh sách chủ đề</button>
+    <!-- ==================== KHÔNG GIAN HỌC TẬP CHÍNH ==================== -->
+    <main class="vs-main">
+        <div class="vs-container">
+            <!-- Thanh công cụ trên cùng -->
+            <div class="vs-topbar">
+                <button type="button" class="pill-btn mobile-menu-btn" id="sidebar-toggle">☰ 50 Chủ đề</button>
 
-            <div class="study-top">
-                <div>
-                    <p class="kicker" id="head-id"></p>
-                    <h2 class="topic-title" id="head-en"></h2>
-                    <p class="topic-sub" id="head-vi"></p>
+                <!-- Chuyển đổi 3 chế độ học -->
+                <div class="mode-tabs" role="tablist">
+                    <button type="button" class="mode-tab active" data-mode="flashcard">🗂️ Thẻ Flashcard</button>
+                    <button type="button" class="mode-tab" data-mode="list">📋 Bảng từ (12)</button>
+                    <button type="button" class="mode-tab" data-mode="quiz">⚡ Phản xạ nhanh</button>
                 </div>
-                <div class="counter" id="head-counter"></div>
-            </div>
-            <div class="track" aria-hidden="true"><span id="progress"></span></div>
 
-            <div class="scene">
-                <div class="flashcard" id="card">
-                    <div class="face front">
-                        <div class="word-line">
-                            <div>
-                                <div class="card-word" id="f-word"></div>
-                                <div class="card-ipa" id="f-ipa"></div>
-                                <div class="pos" id="f-pos"></div>
+                <!-- Điều khiển Giọng đọc & Tự động phát -->
+                <div class="audio-toolbar">
+                    <button type="button" class="pill-btn" id="accent-btn" title="Chuyển giọng Anh-Mỹ / Anh-Anh">🇺🇸 Giọng US</button>
+                    <button type="button" class="pill-btn" id="autospeak-btn" title="Tự động phát âm khi chuyển từ">🔊 Tự đọc: Tắt</button>
+                    <button type="button" class="pill-btn" id="shuffle" title="Trộn ngẫu nhiên thứ tự từ">🔀 Trộn từ</button>
+                </div>
+            </div>
+
+            <!-- Banner thông tin chủ đề & Dải nhảy nhanh 12 từ -->
+            <div class="topic-banner">
+                <div class="banner-row">
+                    <div>
+                        <span class="topic-tag" id="head-id">CHỦ ĐỀ 01</span>
+                        <h1 class="banner-title" id="head-en">Contracts</h1>
+                        <p class="banner-sub" id="head-vi">Hợp đồng</p>
+                    </div>
+                    <div class="counter-box">
+                        <div class="counter-pill" id="head-counter">1 / 12</div>
+                        <div class="banner-sub" id="topic-mastered-label" style="margin-top: 6px; font-weight: 600;">Đã thuộc 0/12 từ</div>
+                    </div>
+                </div>
+
+                <div class="progress-track"><span class="progress-fill" id="progress"></span></div>
+                <div class="word-ribbon" id="word-ribbon"></div>
+            </div>
+
+            <!-- ==================== CHẾ ĐỘ 1: FLASHCARD 3D ==================== -->
+            <section id="section-flashcard">
+                <div class="card-stage">
+                    <div class="flashcard-3d" id="card">
+                        <!-- MẶT TRƯỚC -->
+                        <div class="card-face card-front">
+                            <div class="front-top">
+                                <span class="status-badge" id="front-status">🌱 Đang học</span>
+                                <div class="audio-group">
+                                    <button type="button" class="circle-btn" id="speak" title="Nghe phát âm chuẩn (Phím S)">
+                                        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 10v4h3.2L12 18.5V5.5L7.2 10H4z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M15.5 9.5a3.5 3.5 0 0 1 0 5M17.8 7.2a6.5 6.5 0 0 1 0 9.6"/></svg>
+                                    </button>
+                                    <button type="button" class="circle-btn" id="speak-slow" title="Nghe phát âm chậm 0.6x">🐢</button>
+                                </div>
                             </div>
-                            <button type="button" class="icon-btn" id="speak" title="Nghe từ" aria-label="Nghe từ">
-                                <svg viewBox="0 0 24 24" aria-hidden="true">
-                                    <path fill="currentColor" d="M4 10v4h3.2L12 18.5V5.5L7.2 10H4z"/>
-                                    <path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M15.5 9.5a3.5 3.5 0 0 1 0 5M17.8 7.2a6.5 6.5 0 0 1 0 9.6"/>
-                                </svg>
-                            </button>
+
+                            <div class="front-center">
+                                <div class="hero-word" id="f-word">abide by</div>
+                                <div class="hero-meta">
+                                    <span class="ipa-text" id="f-ipa">/əˈbaɪd baɪ/</span>
+                                    <span class="pos-badge" id="f-pos">Verb</span>
+                                </div>
+                            </div>
+
+                            <div class="front-footer">
+                                <span id="front-teaser">💡 Có ví dụ TOEIC & họ từ ở mặt sau</span>
+                                <span>👆 Chạm vào thẻ hoặc bấm <strong>Space</strong> để lật</span>
+                            </div>
                         </div>
-                        <div class="hint">Bấm thẻ hoặc phím cách để xem nghĩa</div>
-                    </div>
-                    <div class="face back">
-                        <div class="back-section">
-                            <div class="back-label">Ý nghĩa</div>
-                            <div class="meaning" id="b-meaning"></div>
-                        </div>
-                        <div class="back-section" id="sec-ex">
-                            <div class="back-label">Ví dụ</div>
-                            <div id="b-examples"></div>
-                        </div>
-                        <div class="back-section" id="sec-usage">
-                            <div class="back-label">Cách dùng</div>
-                            <div class="usage" id="b-usage"></div>
-                        </div>
-                        <div class="back-section" id="sec-syn">
-                            <div class="back-label">Từ đồng nghĩa</div>
-                            <div id="b-syn"></div>
-                        </div>
-                        <div class="back-section" id="sec-fam">
-                            <div class="back-label">Họ từ</div>
-                            <div id="b-fam"></div>
+
+                        <!-- MẶT SAU (BENTO GRID) -->
+                        <div class="card-face card-back">
+                            <div class="back-header">
+                                <div class="back-word-mini">
+                                    <strong id="b-word-title">abide by</strong>
+                                    <span class="ipa-text" id="b-ipa-title" style="font-size: 0.9rem;"></span>
+                                    <span class="pos-badge" id="b-pos-title"></span>
+                                </div>
+                                <button type="button" class="circle-btn" id="speak-back" title="Nghe lại từ">
+                                    <svg viewBox="0 0 24 24"><path fill="currentColor" d="M4 10v4h3.2L12 18.5V5.5L7.2 10H4z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M15.5 9.5a3.5 3.5 0 0 1 0 5M17.8 7.2a6.5 6.5 0 0 1 0 9.6"/></svg>
+                                </button>
+                            </div>
+
+                            <!-- Ô nghĩa chính -->
+                            <div class="bento-meaning">
+                                <div class="bento-label">Ý nghĩa tiếng Việt</div>
+                                <div class="meaning-text" id="b-meaning"></div>
+                            </div>
+
+                            <!-- Ô Ví dụ & Cách dùng -->
+                            <div class="bento-grid-2">
+                                <div class="bento-box" id="sec-ex">
+                                    <div class="bento-label">Ví dụ ngữ cảnh TOEIC</div>
+                                    <div id="b-examples"></div>
+                                </div>
+                                <div class="bento-box" id="sec-usage">
+                                    <div class="bento-label">Cách dùng & Lưu ý</div>
+                                    <div id="b-usage" style="font-size: 0.9rem; line-height: 1.5; color: var(--text-primary); margin-top: 6px;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Ô Từ đồng nghĩa & Họ từ -->
+                            <div class="bento-grid-2">
+                                <div class="bento-box" id="sec-syn">
+                                    <div class="bento-label">Từ đồng nghĩa (Bấm để nghe)</div>
+                                    <div class="chip-wrap" id="b-syn"></div>
+                                </div>
+                                <div class="bento-box" id="sec-fam">
+                                    <div class="bento-label">Gia đình từ (Word Family)</div>
+                                    <div class="chip-wrap" id="b-fam"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="controls">
-                <button type="button" class="ctrl" id="prev">Trước</button>
-                <button type="button" class="ctrl" id="flip">Lật thẻ</button>
-                <button type="button" class="ctrl" id="shuffle">Trộn</button>
-                <button type="button" class="ctrl primary" id="next">Tiếp</button>
-            </div>
-            <p class="keys">← → chuyển từ · Space lật thẻ</p>
+                <!-- Thanh nút điều khiển & Tự đánh giá mức độ nhớ -->
+                <div class="action-bar">
+                    <button type="button" class="act-btn" id="prev" title="Từ trước (←)">← Trước</button>
+                    <button type="button" class="act-btn btn-learning" id="mark-learning" title="Đánh dấu cần ôn lại">⏳ Cần ôn lại</button>
+                    <button type="button" class="act-btn" id="flip" title="Lật thẻ (Space)">🔄 Lật thẻ</button>
+                    <button type="button" class="act-btn btn-known" id="mark-known" title="Đánh dấu đã thuộc (Phím M)">✓ Đã thuộc lòng</button>
+                    <button type="button" class="act-btn btn-primary" id="next" title="Từ tiếp theo (→)">Tiếp →</button>
+                </div>
+
+                <p class="shortcut-hint">
+                    Phím tắt: <kbd>←</kbd> <kbd>→</kbd> chuyển từ · <kbd>Space</kbd> lật thẻ · <kbd>S</kbd> nghe phát âm · <kbd>M</kbd> đánh dấu đã thuộc
+                </p>
+            </section>
+
+            <!-- ==================== CHẾ ĐỘ 2: BẢNG TỪ VỰNG (12 TỪ) ==================== -->
+            <section id="section-list" class="is-hidden">
+                <div class="list-header-bar">
+                    <span style="font-weight: 700; color: var(--text-secondary);">💡 Mẹo: Bấm "Che nghĩa tiếng Việt" để tự nhẩm kiểm tra trí nhớ</span>
+                    <button type="button" class="pill-btn" id="toggle-blur-btn">🙈 Che nghĩa tiếng Việt</button>
+                </div>
+                <div class="word-cards-grid" id="list-grid"></div>
+            </section>
+
+            <!-- ==================== CHẾ ĐỘ 3: MINI QUIZ PHẢN XẠ NHANH ==================== -->
+            <section id="section-quiz" class="is-hidden">
+                <div class="quiz-card">
+                    <span class="topic-tag" id="quiz-progress">CÂU HỎI 1 / 12</span>
+                    <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px;">
+                        <h2 class="hero-word" id="quiz-word" style="font-size: 2.2rem; margin: 0;"></h2>
+                        <button type="button" class="circle-btn" id="quiz-speak" title="Nghe từ">🔊</button>
+                    </div>
+                    <p class="banner-sub" id="quiz-ipa" style="margin-top: 6px;"></p>
+
+                    <div class="quiz-options" id="quiz-options"></div>
+
+                    <div style="margin-top: 22px; display: flex; justify-content: center; gap: 12px;">
+                        <button type="button" class="act-btn btn-primary is-hidden" id="quiz-next-btn">Câu tiếp theo →</button>
+                    </div>
+                </div>
+            </section>
         </div>
     </main>
 </div>
 
 <script>
     const topics = {{ topic | tojson }};
-    const PALETTE = ['#6d28d9', '#c026d3', '#db2777', '#d97706', '#4f46e5', '#0f766e'];
+    const THEME_COLORS = ['#6366f1', '#0ea5e9', '#10b981', '#8b5cf6', '#ec4899', '#f59e0b', '#14b8a6'];
     const $ = id => document.getElementById(id);
     const card = $('card');
-    const links = document.querySelectorAll('.topic-link');
-    const SPEAK_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 10v4h3.2L12 18.5V5.5L7.2 10H4z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M15.5 9.5a3.5 3.5 0 0 1 0 5M17.8 7.2a6.5 6.5 0 0 1 0 9.6"/></svg>';
+    const links = document.querySelectorAll('.topic-item');
+    const SPEAK_ICON = '<svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M4 10v4h3.2L12 18.5V5.5L7.2 10H4z"/><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" d="M15.5 9.5a3.5 3.5 0 0 1 0 5M17.8 7.2a6.5 6.5 0 0 1 0 9.6"/></svg>';
 
     let t = 0, order = [], c = 0;
+    let accent = 'en-US';
+    let autoSpeak = false;
+    let currentMode = 'flashcard';
+    let blurMeaning = false;
+
+    // Lưu trạng thái từ đã thuộc vào LocalStorage
+    const STORAGE_KEY = 'toeic_600_mastered_v2';
+    let mastered = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'));
+    const makeKey = (tpId, word) => `${tpId}::${word}`;
+
+    function saveProgress() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify([...mastered]));
+        refreshStats();
+    }
 
     const toList = v => (Array.isArray(v) ? v : (v ? [v] : []))
         .map(x => typeof x === 'string' ? x : Object.values(x).join(' · '));
@@ -118,13 +239,37 @@
         return [];
     }
 
+    // Hiệu ứng chuyển từ nhẹ nhàng
+    function animateSlide(dir = 1) {
+        if (!card.animate) return;
+        card.animate([
+            { opacity: 0.4, transform: `translateX(${dir * 22}px) scale(0.98)` },
+            { opacity: 1, transform: 'translateX(0) scale(1)' }
+        ], { duration: 240, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' });
+    }
+
+    function speak(text, rate = 0.92) {
+        if (!text || !('speechSynthesis' in window)) return;
+        speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = accent;
+        u.rate = rate;
+        speechSynthesis.speak(u);
+    }
+
     function fillChips(el, list) {
         el.replaceChildren();
-        list.forEach(s => {
-            const sp = document.createElement('span');
-            sp.className = 'chip';
-            sp.textContent = s;
-            el.appendChild(sp);
+        list.forEach(item => {
+            const chip = document.createElement('span');
+            chip.className = 'vocab-chip';
+            chip.innerHTML = `🔊 ${item}`;
+            chip.title = 'Bấm để nghe phát âm';
+            chip.addEventListener('click', e => {
+                e.stopPropagation();
+                const clean = item.split(/[(:·-]/)[0].trim();
+                speak(clean);
+            });
+            el.appendChild(chip);
         });
     }
 
@@ -134,25 +279,18 @@
         $('sec-ex').classList.toggle('is-hidden', !list.length);
         list.forEach(ex => {
             const row = document.createElement('div');
-            row.className = 'example';
+            row.className = 'ex-item';
             const btn = document.createElement('button');
             btn.type = 'button';
-            btn.className = 'icon-btn';
-            btn.title = 'Nghe ví dụ';
-            btn.setAttribute('aria-label', 'Nghe ví dụ');
-            btn.innerHTML = SPEAK_SVG;
-            btn.disabled = !ex.en;
+            btn.className = 'circle-btn';
+            btn.style.width = '34px';
+            btn.style.height = '34px';
+            btn.innerHTML = SPEAK_ICON;
             btn.addEventListener('click', e => { e.stopPropagation(); speak(ex.en); });
-            const text = document.createElement('div');
-            const en = document.createElement('p');
-            en.className = 'ex-en';
-            en.textContent = ex.en;
-            const vi = document.createElement('p');
-            vi.className = 'ex-vi';
-            vi.textContent = ex.vi;
-            if (!ex.vi) vi.classList.add('is-hidden');
-            text.append(en, vi);
-            row.append(btn, text);
+
+            const txt = document.createElement('div');
+            txt.innerHTML = `<p class="ex-en">${ex.en}</p>${ex.vi ? `<p class="ex-vi">${ex.vi}</p>` : ''}`;
+            row.append(btn, txt);
             box.appendChild(row);
         });
     }
@@ -162,105 +300,323 @@
         return tp && tp.words ? tp.words[order[c]] : null;
     }
 
-    function setSidebar(open) {
-        $('sidebar').classList.toggle('open', open);
-        $('backdrop').classList.toggle('show', open);
+    function refreshStats() {
+        let totalWords = 0, totalKnown = 0;
+        topics.forEach((tp, idx) => {
+            const words = tp.words || [];
+            totalWords += words.length;
+            const knownInTp = words.filter(w => mastered.has(makeKey(tp.id, w.word))).length;
+            totalKnown += knownInTp;
+
+            const statEl = document.querySelector(`[data-tp-stat="${idx}"]`);
+            if (statEl) {
+                statEl.textContent = `${knownInTp}/${words.length}`;
+                statEl.classList.toggle('done', knownInTp === words.length && words.length > 0);
+            }
+        });
+
+        const pct = totalWords ? Math.round((totalKnown / totalWords) * 100) : 0;
+        $('overall-percent').textContent = `${pct}%`;
+        $('overall-count').textContent = `${totalKnown} / ${totalWords} từ đã thuộc`;
+        $('overall-bar').style.width = `${pct}%`;
+
+        const curTp = topics[t];
+        if (curTp && curTp.words) {
+            const curKnown = curTp.words.filter(w => mastered.has(makeKey(curTp.id, w.word))).length;
+            $('topic-mastered-label').textContent = `✓ Đã thuộc ${curKnown}/${curTp.words.length} từ chủ đề này`;
+        }
+    }
+
+    function renderRibbon() {
+        const ribbon = $('word-ribbon');
+        ribbon.replaceChildren();
+        const tp = topics[t];
+        if (!tp || !tp.words) return;
+
+        order.forEach((wIdx, pos) => {
+            const w = tp.words[wIdx];
+            const isKnown = mastered.has(makeKey(tp.id, w.word));
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = `ribbon-item ${pos === c ? 'current' : ''} ${isKnown ? 'is-known' : ''}`;
+            btn.textContent = `${pos + 1}. ${w.word} ${isKnown ? '✓' : ''}`;
+            btn.addEventListener('click', () => {
+                const dir = pos >= c ? 1 : -1;
+                c = pos;
+                render(dir);
+            });
+            ribbon.appendChild(btn);
+        });
+    }
+
+    function render(dir = 1) {
+        const tp = topics[t];
+        if (!tp) return;
+        card.classList.remove('flipped');
+        if (dir !== 0) animateSlide(dir);
+
+        const w = wordAt();
+        $('head-counter').textContent = order.length ? `${c + 1} / ${order.length}` : '0 / 0';
+        $('progress').style.width = (order.length ? ((c + 1) / order.length * 100) : 0) + '%';
+
+        if (!w) return;
+
+        const isKnown = mastered.has(makeKey(tp.id, w.word));
+        const stBadge = $('front-status');
+        stBadge.textContent = isKnown ? '✓ Đã thuộc lòng' : '🌱 Đang học';
+        stBadge.classList.toggle('known', isKnown);
+
+        $('f-word').textContent = w.word || '';
+        $('f-ipa').textContent = w.ipa || '';
+        $('f-pos').textContent = w.pos || 'Vocab';
+
+        $('b-word-title').textContent = w.word || '';
+        $('b-ipa-title').textContent = w.ipa || '';
+        $('b-pos-title').textContent = w.pos || '';
+        $('b-meaning').textContent = w.meaning || '';
+
+        renderExamples(examplesOf(w));
+
+        const usage = w.usage || 'Từ vựng xuất hiện phổ biến trong TOEIC Part 5, 6, 7.';
+        $('b-usage').textContent = usage;
+
+        const syn = toList(w.synonyms), fam = toList(w.word_family);
+        fillChips($('b-syn'), syn.length ? syn : ['Chưa có']);
+        fillChips($('b-fam'), fam.length ? fam : [w.word]);
+
+        $('front-teaser').textContent = `💡 Có ${fam.length || 1} họ từ & ${syn.length || 0} từ đồng nghĩa ở mặt sau`;
+
+        renderRibbon();
+        refreshStats();
+
+        if (autoSpeak && w.word && dir !== 0) {
+            setTimeout(() => speak(w.word), 160);
+        }
+    }
+
+    // Chế độ 2: Render danh sách 12 từ
+    function renderListMode() {
+        const grid = $('list-grid');
+        grid.replaceChildren();
+        const tp = topics[t];
+        if (!tp || !tp.words) return;
+
+        tp.words.forEach((w, idx) => {
+            const isKnown = mastered.has(makeKey(tp.id, w.word));
+            const item = document.createElement('div');
+            item.className = 'word-list-card';
+            item.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:8px;">
+                    <div>
+                        <span style="font-weight:800; font-size:1.15rem; color:var(--text-primary);">${idx + 1}. ${w.word}</span>
+                        <span class="pos-badge" style="margin-left:6px; font-size:0.72rem;">${w.pos || ''}</span>
+                        <div style="color:var(--text-secondary); font-size:0.88rem; margin-top:2px;">${w.ipa || ''}</div>
+                    </div>
+                    <button type="button" class="circle-btn list-speak-btn" style="width:36px; height:36px;">🔊</button>
+                </div>
+                <div class="meaning-box ${blurMeaning ? 'blur-meaning' : ''}" style="font-weight:700; font-size:1.05rem; color:var(--theme); padding:6px 0;">
+                    ${w.meaning || ''}
+                </div>
+                <div style="font-size:0.84rem; color:var(--text-secondary); border-top:1px dashed var(--border-color); padding-top:8px; display:flex; justify-content:space-between; align-items:center;">
+                    <span>${isKnown ? '✅ Đã thuộc' : '⏳ Đang học'}</span>
+                    <button type="button" class="pill-btn jump-card-btn" style="padding:4px 10px; font-size:0.76rem;">Xem Flashcard →</button>
+                </div>
+            `;
+            item.querySelector('.list-speak-btn').addEventListener('click', () => speak(w.word));
+            item.querySelector('.meaning-box').addEventListener('click', e => e.currentTarget.classList.toggle('revealed'));
+            item.querySelector('.jump-card-btn').addEventListener('click', () => {
+                const pos = order.indexOf(idx);
+                if (pos >= 0) c = pos;
+                switchMode('flashcard');
+                render(1);
+            });
+            grid.appendChild(item);
+        });
+    }
+
+    // Chế độ 3: Mini Quiz phản xạ nhanh 4 đáp án
+    let quizIdx = 0;
+    function renderQuizQuestion() {
+        const tp = topics[t];
+        if (!tp || !tp.words || !tp.words.length) return;
+        const words = tp.words;
+        const target = words[order[quizIdx % words.length]];
+
+        $('quiz-progress').textContent = `CÂU HỎI ${(quizIdx % words.length) + 1} / ${words.length}`;
+        $('quiz-word').textContent = target.word;
+        $('quiz-ipa').textContent = `${target.ipa || ''} · (${target.pos || ''})`;
+        $('quiz-next-btn').classList.add('is-hidden');
+
+        // Tạo 3 đáp án nhiễu từ các từ khác trong chủ đề
+        const pool = words.filter(x => x.word !== target.word);
+        for (let i = pool.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [pool[i], pool[j]] = [pool[j], pool[i]];
+        }
+        const options = [target, ...pool.slice(0, 3)];
+        for (let i = options.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [options[i], options[j]] = [options[j], options[i]];
+        }
+
+        const optBox = $('quiz-options');
+        optBox.replaceChildren();
+        options.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'quiz-opt';
+            btn.textContent = `${idx + 1}. ${opt.meaning}`;
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.quiz-opt').forEach(b => b.disabled = true);
+                if (opt.word === target.word) {
+                    btn.classList.add('correct');
+                    speak(target.word);
+                    mastered.add(makeKey(tp.id, target.word));
+                    saveProgress();
+                } else {
+                    btn.classList.add('wrong');
+                    document.querySelectorAll('.quiz-opt').forEach(b => {
+                        if (b.textContent.includes(target.meaning)) b.classList.add('correct');
+                    });
+                }
+                $('quiz-next-btn').classList.remove('is-hidden');
+            });
+            optBox.appendChild(btn);
+        });
+    }
+
+    function switchMode(mode) {
+        currentMode = mode;
+        document.querySelectorAll('.mode-tab').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+        $('section-flashcard').classList.toggle('is-hidden', mode !== 'flashcard');
+        $('section-list').classList.toggle('is-hidden', mode !== 'list');
+        $('section-quiz').classList.toggle('is-hidden', mode !== 'quiz');
+
+        if (mode === 'list') renderListMode();
+        if (mode === 'quiz') { quizIdx = c; renderQuizQuestion(); }
     }
 
     function loadTopic(idx, pushHash = true) {
-        if (!topics.length) {
-            $('head-en').textContent = 'Chưa có chủ đề';
-            return;
-        }
+        if (!topics.length) return;
         t = Math.max(0, Math.min(idx, topics.length - 1));
         const tp = topics[t];
         order = (tp.words || []).map((_, k) => k);
         c = 0;
-        $('app').style.setProperty('--topic', PALETTE[t % PALETTE.length]);
+        $('app').style.setProperty('--theme', THEME_COLORS[t % THEME_COLORS.length]);
+
         links.forEach(l => l.classList.toggle('active', +l.dataset.index === t));
-        const active = links[t];
-        $('head-id').textContent = 'Chủ đề ' + tp.id;
+        if (links[t]) links[t].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+
+        $('head-id').textContent = 'CHỦ ĐỀ ' + String(tp.id).padStart(2, '0');
         $('head-en').textContent = tp.topic_en || '';
         $('head-vi').textContent = tp.topic_vi || '';
-        if (active) active.scrollIntoView({ block: 'nearest' });
-        if (pushHash) history.replaceState(null, '', '#topic-' + tp.id);
-        setSidebar(false);
-        render();
-    }
 
-    function render() {
-        const tp = topics[t];
-        if (!tp) return;
-        card.classList.remove('flipped');
-        const w = wordAt();
-        $('head-counter').textContent = order.length ? (c + 1) + ' / ' + order.length : '0 / 0';
-        $('progress').style.width = (order.length ? (c + 1) / order.length * 100 : 0) + '%';
-        if (!w) {
-            $('f-word').textContent = 'Chủ đề chưa có từ';
-            $('f-ipa').textContent = '';
-            $('f-pos').textContent = '';
-            $('b-meaning').textContent = '';
-            renderExamples([]);
-            return;
-        }
-        $('f-word').textContent = w.word || '';
-        $('f-ipa').textContent = w.ipa || '';
-        $('f-pos').textContent = w.pos || '';
-        $('b-meaning').textContent = w.meaning || '';
-        renderExamples(examplesOf(w));
-        const usage = w.usage || '';
-        $('b-usage').textContent = usage;
-        $('sec-usage').classList.toggle('is-hidden', !usage);
-        const syn = toList(w.synonyms), fam = toList(w.word_family);
-        fillChips($('b-syn'), syn);
-        $('sec-syn').classList.toggle('is-hidden', !syn.length);
-        fillChips($('b-fam'), fam);
-        $('sec-fam').classList.toggle('is-hidden', !fam.length);
+        if (pushHash) history.replaceState(null, '', '#topic-' + tp.id);
+        $('sidebar').classList.remove('open');
+        $('backdrop').classList.remove('show');
+
+        render(1);
+        if (currentMode === 'list') renderListMode();
+        if (currentMode === 'quiz') { quizIdx = 0; renderQuizQuestion(); }
     }
 
     const next = () => {
-        if (c < order.length - 1) { c++; render(); }
+        if (c < order.length - 1) { c++; render(1); }
         else if (t < topics.length - 1) loadTopic(t + 1);
     };
+
     const prev = () => {
-        if (c > 0) { c--; render(); }
-        else if (t > 0) { loadTopic(t - 1); c = Math.max(0, order.length - 1); render(); }
+        if (c > 0) { c--; render(-1); }
+        else if (t > 0) { loadTopic(t - 1); c = Math.max(0, order.length - 1); render(-1); }
     };
+
     const flip = () => card.classList.toggle('flipped');
 
-    function shuffle() {
+    // Sự kiện nút bấm
+    card.addEventListener('click', flip);
+    $('speak').addEventListener('click', e => { e.stopPropagation(); const w = wordAt(); if (w) speak(w.word); });
+    $('speak-slow').addEventListener('click', e => { e.stopPropagation(); const w = wordAt(); if (w) speak(w.word, 0.58); });
+    $('speak-back').addEventListener('click', e => { e.stopPropagation(); const w = wordAt(); if (w) speak(w.word); });
+    $('next').addEventListener('click', next);
+    $('prev').addEventListener('click', prev);
+    $('flip').addEventListener('click', flip);
+
+    $('mark-known').addEventListener('click', () => {
+        const tp = topics[t], w = wordAt();
+        if (!tp || !w) return;
+        mastered.add(makeKey(tp.id, w.word));
+        saveProgress();
+        next();
+    });
+
+    $('mark-learning').addEventListener('click', () => {
+        const tp = topics[t], w = wordAt();
+        if (!tp || !w) return;
+        mastered.delete(makeKey(tp.id, w.word));
+        saveProgress();
+        next();
+    });
+
+    $('shuffle').addEventListener('click', () => {
         for (let i = order.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [order[i], order[j]] = [order[j], order[i]];
         }
         c = 0;
-        render();
-    }
+        render(1);
+    });
 
-    function speak(text) {
-        if (!text || !('speechSynthesis' in window)) return;
-        speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = 'en-US';
-        u.rate = 0.9;
-        speechSynthesis.speak(u);
-    }
+    $('accent-btn').addEventListener('click', () => {
+        accent = accent === 'en-US' ? 'en-GB' : 'en-US';
+        $('accent-btn').textContent = accent === 'en-US' ? '🇺🇸 Giọng US' : '🇬🇧 Giọng UK';
+        const w = wordAt();
+        if (w) speak(w.word);
+    });
 
-    card.addEventListener('click', flip);
-    $('speak').addEventListener('click', e => { e.stopPropagation(); const w = wordAt(); if (w) speak(w.word); });
-    $('next').addEventListener('click', next);
-    $('prev').addEventListener('click', prev);
-    $('flip').addEventListener('click', flip);
-    $('shuffle').addEventListener('click', shuffle);
+    $('autospeak-btn').addEventListener('click', () => {
+        autoSpeak = !autoSpeak;
+        $('autospeak-btn').textContent = autoSpeak ? '🔊 Tự đọc: Bật' : '🔊 Tự đọc: Tắt';
+        $('autospeak-btn').classList.toggle('active-toggle', autoSpeak);
+    });
+
+    document.querySelectorAll('.mode-tab').forEach(btn => {
+        btn.addEventListener('click', () => switchMode(btn.dataset.mode));
+    });
+
+    $('toggle-blur-btn').addEventListener('click', () => {
+        blurMeaning = !blurMeaning;
+        $('toggle-blur-btn').textContent = blurMeaning ? '👀 Hiện toàn bộ nghĩa' : '🙈 Che nghĩa tiếng Việt';
+        renderListMode();
+    });
+
+    $('quiz-speak').addEventListener('click', () => {
+        const tp = topics[t];
+        if (tp && tp.words) speak(tp.words[order[quizIdx % tp.words.length]].word);
+    });
+
+    $('quiz-next-btn').addEventListener('click', () => {
+        quizIdx++;
+        renderQuizQuestion();
+    });
+
     links.forEach(l => l.addEventListener('click', () => loadTopic(+l.dataset.index)));
-    $('sidebar-toggle').addEventListener('click', () => setSidebar(!$('sidebar').classList.contains('open')));
-    $('backdrop').addEventListener('click', () => setSidebar(false));
+    $('sidebar-toggle').addEventListener('click', () => {
+        $('sidebar').classList.toggle('open');
+        $('backdrop').classList.toggle('show');
+    });
+    $('backdrop').addEventListener('click', () => {
+        $('sidebar').classList.remove('open');
+        $('backdrop').classList.remove('show');
+    });
 
     document.addEventListener('keydown', e => {
         if (e.target.tagName === 'INPUT') return;
+        if (currentMode !== 'flashcard') return;
         if (e.key === 'ArrowRight') next();
         else if (e.key === 'ArrowLeft') prev();
         else if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); flip(); }
+        else if (e.key.toLowerCase() === 's') { const w = wordAt(); if (w) speak(w.word); }
+        else if (e.key.toLowerCase() === 'm') { $('mark-known').click(); }
     });
 
     const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/g, 'd');
