@@ -1,7 +1,7 @@
-from flask import Flask, render_template, url_for, redirect, session
+from flask import render_template, request, redirect, url_for, session, jsonify
 import os
 from dotenv import load_dotenv
-from flask_login import LoginManager, login_user, current_user
+from flask_login import LoginManager, login_user, current_user,login_required
 from authlib.integrations.flask_client import OAuth
 from model import User, db, app, Word, Topic
 import dao
@@ -111,8 +111,28 @@ def topics():
             "synonyms": w.synonyms, "word_family": w.word_family,
         } for w in t.words],
     } for t in rows]
+    mastered_list = []
+    if current_user.is_authenticated:
+        mastered_list = dao.get_user_mastered(current_user.id)
 
-    return render_template('topic.html',topic = topic)
+    return render_template('topic.html',topic = topic,mastered_list=mastered_list)
+
+@app.route('/api/progress', methods=['POST'])
+def save_vocab_progress():
+    # Nếu chưa đăng nhập thì báo cho trình duyệt biết để lưu tạm vào localStorage
+    if not current_user.is_authenticated:
+        return jsonify({"status": "guest"}), 200
+
+    data = request.get_json() or {}
+    word_key = data.get('word_key')
+    is_known = bool(data.get('is_known'))
+
+    if word_key:
+        dao.update_user_word(current_user.id, word_key, is_known)
+
+    return jsonify({"status": "ok"})
+
+
 @app.route('/logout')
 def logout():
     session.clear()

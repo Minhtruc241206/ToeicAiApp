@@ -1,41 +1,49 @@
 
     :root {
         --theme: #6366f1;
-        --theme-soft: #eef2ff;
-        --bg-page: #f4f6fb;
-        --bg-surface: #ffffff;
-        --bg-subtle: #f8fafc;
-        --text-primary: #1e293b;
-        --text-secondary: #64748b;
-        --text-muted: #94a3b8;
-        --border-color: #e2e8f0;
-        --emerald: #10b981;
-        --emerald-soft: #ecfdf5;
-        --amber: #f59e0b;
-        --amber-soft: #fffbeb;
-        --rose: #f43f5e;
-        --rose-soft: #fff1f2;
+        /* Tự động pha màu nền và viền theo màu chủ đề (--theme) */
+        --bg-page: color-mix(in srgb, var(--theme) 9%, #f1f5f9);
+        --bg-surface: color-mix(in srgb, var(--theme) 4%, #ffffff);
+        --bg-subtle: color-mix(in srgb, var(--theme) 8%, #f8fafc);
+        --border-color: color-mix(in srgb, var(--theme) 18%, #e2e8f0);
+        --border-strong: color-mix(in srgb, var(--theme) 32%, #cbd5e1);
+
+        --text-primary: #0f172a;
+        --text-secondary: #475569;
+        --text-muted: #64748b;
+
+        --emerald: #059669;
+        --emerald-soft: #d1fae5;
+        --amber: #d97706;
+        --amber-soft: #fef3c7;
+        --rose: #e11d48;
+        --rose-soft: #ffe4e6;
+
         --radius-xl: 24px;
         --radius-lg: 16px;
         --radius-md: 12px;
-        --shadow-soft: 0 10px 30px -10px rgba(15, 23, 42, 0.06), 0 4px 12px -2px rgba(15, 23, 42, 0.03);
-        --shadow-float: 0 24px 48px -12px rgba(15, 23, 42, 0.10), 0 0 1px rgba(15, 23, 42, 0.12);
+        --shadow-soft: 0 10px 30px -10px color-mix(in srgb, var(--theme) 18%, rgba(15, 23, 42, 0.08));
+        --shadow-float: 0 24px 48px -12px color-mix(in srgb, var(--theme) 25%, rgba(15, 23, 42, 0.14));
     }
 
     .vocab-studio * {
         box-sizing: border-box;
     }
 
+    /* Nền Aurora đa sắc chuyển màu mượt theo từng chủ đề */
     .vocab-studio {
         font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
-        background: radial-gradient(circle at 90% 5%, color-mix(in srgb, var(--theme) 8%, transparent), transparent 40%),
-                    radial-gradient(circle at 10% 90%, rgba(16, 185, 129, 0.06), transparent 40%),
-                    var(--bg-page);
+        background:
+            radial-gradient(circle at 88% 8%, color-mix(in srgb, var(--theme) 24%, transparent), transparent 42%),
+            radial-gradient(circle at 18% 88%, color-mix(in srgb, var(--theme) 16%, transparent), transparent 45%),
+            radial-gradient(circle at 50% 45%, rgba(255, 255, 255, 0.55), transparent 60%),
+            var(--bg-page);
         min-height: calc(100vh - 60px);
         color: var(--text-primary);
         display: grid;
         grid-template-columns: 340px 1fr;
         position: relative;
+        transition: background 0.45s ease;
     }
 
     .is-hidden {
@@ -44,8 +52,10 @@
 
     /* ==================== SIDEBAR CHỦ ĐỀ ==================== */
     .vs-sidebar {
-        background: rgba(255, 255, 255, 0.88);
-        backdrop-filter: blur(16px);
+        background: linear-gradient(180deg,
+            color-mix(in srgb, var(--theme) 8%, rgba(255, 255, 255, 0.92)),
+            rgba(255, 255, 255, 0.95));
+        backdrop-filter: blur(20px);
         border-right: 1px solid var(--border-color);
         height: 100vh;
         position: sticky;
@@ -53,6 +63,7 @@
         display: flex;
         flex-direction: column;
         z-index: 40;
+        transition: background 0.35s ease, border-color 0.35s ease;
     }
 
     .vs-sidebar-top {
@@ -62,12 +73,26 @@
 
     /* Thẻ tổng quan tiến độ 600 từ */
     .mastery-card {
-        background: linear-gradient(135deg, var(--theme), color-mix(in srgb, var(--theme) 70%, #4338ca));
+        background: linear-gradient(135deg, var(--theme), color-mix(in srgb, var(--theme) 60%, #1e1b4b));
         color: #ffffff;
-        padding: 16px;
+        padding: 18px;
         border-radius: var(--radius-lg);
         margin-bottom: 14px;
-        box-shadow: 0 10px 20px -8px color-mix(in srgb, var(--theme) 45%, transparent);
+        box-shadow: 0 14px 28px -8px color-mix(in srgb, var(--theme) 55%, transparent);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .mastery-card::after {
+        content: "";
+        position: absolute;
+        width: 110px;
+        height: 110px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.12);
+        top: -30px;
+        right: -25px;
+        pointer-events: none;
     }
 
     .mastery-head {
@@ -75,8 +100,8 @@
         justify-content: space-between;
         align-items: center;
         font-size: 0.82rem;
-        font-weight: 600;
-        opacity: 0.92;
+        font-weight: 700;
+        opacity: 0.95;
     }
 
     .mastery-nums {
@@ -87,8 +112,8 @@
     }
 
     .mastery-bar {
-        height: 7px;
-        background: rgba(255, 255, 255, 0.22);
+        height: 8px;
+        background: rgba(255, 255, 255, 0.25);
         border-radius: 99px;
         overflow: hidden;
     }
@@ -112,7 +137,7 @@
         padding: 10px 14px 10px 36px;
         border-radius: 12px;
         border: 1.5px solid var(--border-color);
-        background: var(--bg-subtle);
+        background: rgba(255, 255, 255, 0.85);
         font-size: 0.88rem;
         color: var(--text-primary);
         transition: all 0.2s ease;
@@ -123,7 +148,7 @@
         outline: none;
         background: #ffffff;
         border-color: var(--theme);
-        box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme) 15%, transparent);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--theme) 20%, transparent);
     }
 
     .search-icon {
@@ -150,7 +175,7 @@
         width: 5px;
     }
     .topic-list::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
+        background: color-mix(in srgb, var(--theme) 35%, #cbd5e1);
         border-radius: 99px;
     }
 
@@ -162,7 +187,7 @@
         padding: 11px 12px;
         border: 1px solid transparent;
         border-radius: 14px;
-        background: transparent;
+        background: rgba(255, 255, 255, 0.55);
         text-align: left;
         cursor: pointer;
         transition: all 0.2s ease;
@@ -170,22 +195,26 @@
     }
 
     .topic-item:hover {
-        background: var(--bg-subtle);
-        transform: translateX(2px);
+        background: color-mix(in srgb, var(--theme) 10%, #ffffff);
+        border-color: var(--border-color);
+        transform: translateX(3px);
     }
 
     .topic-item.active {
-        background: color-mix(in srgb, var(--theme) 10%, #ffffff);
-        border-color: color-mix(in srgb, var(--theme) 30%, transparent);
+        background: linear-gradient(135deg,
+            color-mix(in srgb, var(--theme) 18%, #ffffff),
+            color-mix(in srgb, var(--theme) 8%, #ffffff));
+        border-color: color-mix(in srgb, var(--theme) 45%, transparent);
+        box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--theme) 30%, transparent);
     }
 
     .topic-badge {
         width: 36px;
         height: 36px;
         border-radius: 10px;
-        background: var(--bg-subtle);
-        color: var(--text-secondary);
-        font-weight: 700;
+        background: color-mix(in srgb, var(--theme) 12%, #ffffff);
+        color: var(--theme);
+        font-weight: 800;
         font-size: 0.84rem;
         display: flex;
         align-items: center;
@@ -197,7 +226,7 @@
     .topic-item.active .topic-badge {
         background: var(--theme);
         color: #ffffff;
-        box-shadow: 0 4px 10px color-mix(in srgb, var(--theme) 35%, transparent);
+        box-shadow: 0 4px 12px color-mix(in srgb, var(--theme) 45%, transparent);
     }
 
     .topic-info {
@@ -227,10 +256,10 @@
     .topic-stat-pill {
         font-size: 0.72rem;
         font-weight: 700;
-        padding: 2px 7px;
+        padding: 2px 8px;
         border-radius: 99px;
-        background: #f1f5f9;
-        color: var(--text-secondary);
+        background: color-mix(in srgb, var(--theme) 12%, #ffffff);
+        color: var(--theme);
     }
 
     .topic-stat-pill.done {
@@ -264,20 +293,22 @@
         display: none;
     }
 
-    /* Cụm chuyển đổi 3 chế độ học (Segmented Control) */
+    /* Cụm chuyển đổi 3 chế độ học */
     .mode-tabs {
         display: inline-flex;
-        background: #e2e8f0;
-        padding: 4px;
-        border-radius: 14px;
+        background: color-mix(in srgb, var(--theme) 14%, #ffffff);
+        border: 1px solid var(--border-color);
+        padding: 5px;
+        border-radius: 15px;
         gap: 4px;
+        box-shadow: var(--shadow-soft);
     }
 
     .mode-tab {
         border: none;
         background: transparent;
         padding: 8px 16px;
-        border-radius: 10px;
+        border-radius: 11px;
         font-size: 0.86rem;
         font-weight: 700;
         color: var(--text-secondary);
@@ -286,10 +317,14 @@
         font-family: inherit;
     }
 
+    .mode-tab:hover {
+        color: var(--theme);
+    }
+
     .mode-tab.active {
-        background: #ffffff;
-        color: var(--text-primary);
-        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+        background: var(--theme);
+        color: #ffffff;
+        box-shadow: 0 4px 12px color-mix(in srgb, var(--theme) 40%, transparent);
     }
 
     /* Cụm cài đặt âm thanh nhanh */
@@ -300,13 +335,14 @@
     }
 
     .pill-btn {
-        padding: 8px 13px;
-        border-radius: 11px;
+        padding: 8px 14px;
+        border-radius: 12px;
         border: 1px solid var(--border-color);
-        background: var(--bg-surface);
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(8px);
         color: var(--text-primary);
         font-size: 0.83rem;
-        font-weight: 600;
+        font-weight: 700;
         cursor: pointer;
         display: inline-flex;
         align-items: center;
@@ -317,25 +353,30 @@
     }
 
     .pill-btn:hover {
+        background: #ffffff;
         border-color: var(--theme);
         color: var(--theme);
         transform: translateY(-1px);
     }
 
     .pill-btn.active-toggle {
-        background: color-mix(in srgb, var(--theme) 12%, #ffffff);
+        background: var(--theme);
         border-color: var(--theme);
-        color: var(--theme);
+        color: #ffffff;
     }
 
-    /* Header Chủ đề hiện tại */
+    /* Banner Chủ đề hiện tại - Nhuộm màu Gradient theo chủ đề */
     .topic-banner {
-        background: var(--bg-surface);
-        border: 1px solid var(--border-color);
+        background: linear-gradient(135deg,
+            color-mix(in srgb, var(--theme) 18%, #ffffff) 0%,
+            color-mix(in srgb, var(--theme) 6%, #ffffff) 100%);
+        border: 1px solid var(--border-strong);
+        border-left: 6px solid var(--theme);
         border-radius: var(--radius-xl);
         padding: 20px 24px;
         box-shadow: var(--shadow-soft);
         margin-bottom: 16px;
+        transition: all 0.35s ease;
     }
 
     .banner-row {
@@ -352,24 +393,27 @@
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.08em;
-        padding: 4px 10px;
+        padding: 4px 12px;
         border-radius: 99px;
-        background: color-mix(in srgb, var(--theme) 12%, #ffffff);
-        color: var(--theme);
+        background: var(--theme);
+        color: #ffffff;
         margin-bottom: 6px;
+        box-shadow: 0 3px 8px color-mix(in srgb, var(--theme) 35%, transparent);
     }
 
     .banner-title {
-        font-size: 1.55rem;
+        font-size: 1.6rem;
         font-weight: 800;
         margin: 0;
         letter-spacing: -0.02em;
+        color: var(--text-primary);
     }
 
     .banner-sub {
         color: var(--text-secondary);
         font-size: 0.92rem;
         margin: 2px 0 0;
+        font-weight: 500;
     }
 
     .counter-box {
@@ -379,17 +423,19 @@
     .counter-pill {
         font-size: 1.15rem;
         font-weight: 800;
-        color: var(--theme);
-        background: color-mix(in srgb, var(--theme) 10%, #ffffff);
-        padding: 6px 16px;
+        color: #ffffff;
+        background: linear-gradient(135deg, var(--theme), color-mix(in srgb, var(--theme) 70%, #0f172a));
+        padding: 6px 18px;
         border-radius: 99px;
         display: inline-block;
+        box-shadow: 0 4px 12px color-mix(in srgb, var(--theme) 35%, transparent);
     }
 
     /* Thanh tiến độ mượt + Dải 12 từ vựng */
     .progress-track {
-        height: 6px;
-        background: #eef2f6;
+        height: 8px;
+        background: rgba(255, 255, 255, 0.75);
+        border: 1px solid var(--border-color);
         border-radius: 99px;
         overflow: hidden;
         margin: 16px 0 12px;
@@ -399,7 +445,7 @@
         display: block;
         height: 100%;
         width: 0%;
-        background: linear-gradient(90deg, var(--theme), #ec4899);
+        background: linear-gradient(90deg, var(--theme), color-mix(in srgb, var(--theme) 60%, #f43f5e));
         border-radius: 99px;
         transition: width 0.35s cubic-bezier(0.22, 1, 0.36, 1);
     }
@@ -415,18 +461,18 @@
         height: 4px;
     }
     .word-ribbon::-webkit-scrollbar-thumb {
-        background: #cbd5e1;
+        background: color-mix(in srgb, var(--theme) 35%, #cbd5e1);
         border-radius: 99px;
     }
 
     .ribbon-item {
-        padding: 6px 12px;
+        padding: 6px 13px;
         border-radius: 99px;
         border: 1px solid var(--border-color);
-        background: var(--bg-subtle);
+        background: rgba(255, 255, 255, 0.85);
         color: var(--text-secondary);
         font-size: 0.8rem;
-        font-weight: 600;
+        font-weight: 700;
         white-space: nowrap;
         cursor: pointer;
         transition: all 0.2s ease;
@@ -437,6 +483,7 @@
     }
 
     .ribbon-item:hover {
+        background: #ffffff;
         border-color: var(--theme);
         color: var(--theme);
     }
@@ -445,17 +492,18 @@
         background: var(--theme);
         color: #ffffff;
         border-color: var(--theme);
-        box-shadow: 0 3px 10px color-mix(in srgb, var(--theme) 30%, transparent);
+        box-shadow: 0 4px 10px color-mix(in srgb, var(--theme) 35%, transparent);
     }
 
     .ribbon-item.is-known {
-        border-color: #a7f3d0;
+        border-color: #6ee7b7;
         background: var(--emerald-soft);
-        color: #047857;
+        color: #065f46;
     }
 
     .ribbon-item.is-known.current {
         background: var(--emerald);
+        border-color: var(--emerald);
         color: #ffffff;
     }
 
@@ -467,7 +515,7 @@
 
     .flashcard-3d {
         width: 100%;
-        min-height: 420px;
+        min-height: 425px;
         position: relative;
         transform-style: preserve-3d;
         transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -484,9 +532,8 @@
         inset: 0;
         backface-visibility: hidden;
         -webkit-backface-visibility: hidden;
-        background: var(--bg-surface);
         border-radius: var(--radius-xl);
-        border: 1px solid var(--border-color);
+        border: 1.5px solid var(--border-strong);
         box-shadow: var(--shadow-float);
         padding: 32px 36px;
         display: flex;
@@ -494,11 +541,24 @@
         overflow-y: auto;
     }
 
-    /* Mặt trước thẻ */
+    /* Thanh viền màu trang trí trên đỉnh thẻ */
+    .card-face::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 7px;
+        background: linear-gradient(90deg, var(--theme), color-mix(in srgb, var(--theme) 55%, #ec4899));
+    }
+
+    /* Mặt trước thẻ: Nền chuyển sắc Pastel dịu mắt */
     .card-front {
         justify-content: space-between;
-        background: radial-gradient(circle at 95% 10%, color-mix(in srgb, var(--theme) 7%, transparent), transparent 45%),
-                    var(--bg-surface);
+        background:
+            radial-gradient(circle at 92% 14%, color-mix(in srgb, var(--theme) 22%, transparent), transparent 45%),
+            radial-gradient(circle at 8% 88%, color-mix(in srgb, var(--theme) 14%, transparent), transparent 45%),
+            linear-gradient(160deg, #ffffff 30%, color-mix(in srgb, var(--theme) 10%, #ffffff) 100%);
     }
 
     .front-top {
@@ -511,19 +571,19 @@
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        padding: 6px 12px;
+        padding: 6px 14px;
         border-radius: 99px;
         font-size: 0.8rem;
         font-weight: 700;
-        background: var(--bg-subtle);
-        color: var(--text-secondary);
+        background: color-mix(in srgb, var(--theme) 12%, #ffffff);
+        color: var(--theme);
         border: 1px solid var(--border-color);
     }
 
     .status-badge.known {
         background: var(--emerald-soft);
         color: var(--emerald);
-        border-color: #a7f3d0;
+        border-color: #6ee7b7;
     }
 
     .audio-group {
@@ -536,7 +596,7 @@
         height: 44px;
         border-radius: 14px;
         border: 1px solid var(--border-color);
-        background: #ffffff;
+        background: color-mix(in srgb, var(--theme) 10%, #ffffff);
         color: var(--theme);
         display: inline-flex;
         align-items: center;
@@ -556,21 +616,27 @@
         background: var(--theme);
         color: #ffffff;
         border-color: var(--theme);
-        transform: scale(1.06);
+        transform: scale(1.07);
     }
 
     .front-center {
         text-align: center;
         margin: auto 0;
-        padding: 20px 0;
+        padding: 22px 16px;
+        background: rgba(255, 255, 255, 0.65);
+        border: 1px solid color-mix(in srgb, var(--theme) 16%, transparent);
+        border-radius: var(--radius-lg);
+        backdrop-filter: blur(6px);
     }
 
     .hero-word {
         font-size: clamp(2.4rem, 4.5vw, 3.4rem);
         font-weight: 800;
         letter-spacing: -0.03em;
-        color: var(--text-primary);
-        line-height: 1.15;
+        background: linear-gradient(135deg, #0f172a 20%, var(--theme) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        line-height: 1.18;
     }
 
     .hero-meta {
@@ -583,12 +649,14 @@
     }
 
     .ipa-text {
-        font-size: 1.15rem;
+        font-size: 1.12rem;
         color: var(--text-secondary);
         font-family: 'Segoe UI', system-ui, sans-serif;
-        background: var(--bg-subtle);
-        padding: 4px 12px;
-        border-radius: 8px;
+        background: color-mix(in srgb, var(--theme) 10%, #ffffff);
+        border: 1px solid var(--border-color);
+        padding: 4px 14px;
+        border-radius: 99px;
+        font-weight: 600;
     }
 
     .pos-badge {
@@ -596,10 +664,11 @@
         font-weight: 800;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        padding: 5px 12px;
-        border-radius: 8px;
-        background: color-mix(in srgb, var(--theme) 12%, #ffffff);
-        color: var(--theme);
+        padding: 5px 14px;
+        border-radius: 99px;
+        background: var(--theme);
+        color: #ffffff;
+        box-shadow: 0 3px 10px color-mix(in srgb, var(--theme) 30%, transparent);
     }
 
     .front-footer {
@@ -607,16 +676,21 @@
         justify-content: space-between;
         align-items: center;
         padding-top: 16px;
-        border-top: 1px dashed var(--border-color);
+        border-top: 1px dashed var(--border-strong);
         font-size: 0.85rem;
-        color: var(--text-muted);
+        color: var(--text-secondary);
+        font-weight: 500;
     }
 
-    /* Mặt sau thẻ (Bố cục Bento Grid hiện đại) */
+    /* Mặt sau thẻ: Mỗi ô Bento mang một sắc thái Pastel riêng biệt */
     .card-back {
         transform: rotateY(180deg);
         gap: 14px;
         padding: 26px 30px;
+        background: linear-gradient(155deg,
+            color-mix(in srgb, var(--theme) 10%, #ffffff) 0%,
+            #ffffff 60%,
+            color-mix(in srgb, var(--theme) 7%, #f8fafc) 100%);
     }
 
     .back-header {
@@ -629,22 +703,25 @@
 
     .back-word-mini {
         display: flex;
-        align-items: baseline;
+        align-items: center;
         gap: 10px;
         flex-wrap: wrap;
     }
 
     .back-word-mini strong {
-        font-size: 1.35rem;
+        font-size: 1.4rem;
         font-weight: 800;
         color: var(--theme);
     }
 
     .bento-meaning {
-        background: linear-gradient(135deg, color-mix(in srgb, var(--theme) 9%, #ffffff), #ffffff);
-        border: 1px solid color-mix(in srgb, var(--theme) 22%, transparent);
+        background: linear-gradient(135deg,
+            color-mix(in srgb, var(--theme) 20%, #ffffff),
+            color-mix(in srgb, var(--theme) 8%, #ffffff));
+        border: 1.5px solid color-mix(in srgb, var(--theme) 35%, transparent);
         padding: 16px 20px;
         border-radius: var(--radius-lg);
+        box-shadow: 0 6px 16px -6px color-mix(in srgb, var(--theme) 20%, transparent);
     }
 
     .bento-label {
@@ -657,7 +734,7 @@
     }
 
     .meaning-text {
-        font-size: 1.4rem;
+        font-size: 1.42rem;
         font-weight: 800;
         color: var(--text-primary);
     }
@@ -669,10 +746,35 @@
     }
 
     .bento-box {
-        background: var(--bg-subtle);
+        background: color-mix(in srgb, var(--theme) 7%, #ffffff);
         border: 1px solid var(--border-color);
         padding: 14px 16px;
         border-radius: var(--radius-lg);
+    }
+
+    /* Tô màu Pastel riêng cho từng ô thông tin ở mặt sau */
+    #sec-ex {
+        background: color-mix(in srgb, var(--theme) 9%, #ffffff);
+    }
+
+    #sec-usage {
+        background: linear-gradient(135deg, #fffbeb, #fef3c7);
+        border-color: #fde68a;
+    }
+    #sec-usage .bento-label {
+        color: #b45309;
+    }
+
+    #sec-syn {
+        background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+        border-color: #bbf7d0;
+    }
+    #sec-syn .bento-label {
+        color: #047857;
+    }
+
+    #sec-fam {
+        background: color-mix(in srgb, var(--theme) 11%, #f8fafc);
     }
 
     .ex-item {
@@ -684,7 +786,7 @@
 
     .ex-en {
         margin: 0;
-        font-weight: 600;
+        font-weight: 700;
         font-size: 0.94rem;
         color: var(--text-primary);
         line-height: 1.4;
@@ -704,12 +806,12 @@
     }
 
     .vocab-chip {
-        padding: 5px 11px;
+        padding: 5px 12px;
         border-radius: 99px;
-        background: #ffffff;
-        border: 1px solid var(--border-color);
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid var(--border-strong);
         font-size: 0.8rem;
-        font-weight: 600;
+        font-weight: 700;
         color: var(--text-primary);
         cursor: pointer;
         transition: all 0.18s ease;
@@ -719,8 +821,9 @@
     }
 
     .vocab-chip:hover {
+        background: var(--theme);
         border-color: var(--theme);
-        color: var(--theme);
+        color: #ffffff;
         transform: translateY(-1px);
     }
 
@@ -735,8 +838,8 @@
     .act-btn {
         padding: 13px 18px;
         border-radius: 14px;
-        border: 1px solid var(--border-color);
-        background: var(--bg-surface);
+        border: 1px solid var(--border-strong);
+        background: rgba(255, 255, 255, 0.9);
         color: var(--text-primary);
         font-weight: 700;
         font-size: 0.9rem;
@@ -752,42 +855,50 @@
 
     .act-btn:hover {
         transform: translateY(-2px);
+        background: #ffffff;
         border-color: var(--theme);
+        color: var(--theme);
     }
 
     .act-btn.btn-learning {
-        background: var(--amber-soft);
-        border-color: #fde68a;
+        background: linear-gradient(135deg, #fffbeb, #fef3c7);
+        border-color: #fcd34d;
         color: #b45309;
     }
 
     .act-btn.btn-known {
-        background: var(--emerald-soft);
-        border-color: #a7f3d0;
+        background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+        border-color: #6ee7b7;
         color: #047857;
     }
 
     .act-btn.btn-primary {
-        background: var(--theme);
+        background: linear-gradient(135deg, var(--theme), color-mix(in srgb, var(--theme) 75%, #1e1b4b));
         border-color: var(--theme);
         color: #ffffff;
+        box-shadow: 0 8px 20px -6px color-mix(in srgb, var(--theme) 55%, transparent);
+    }
+
+    .act-btn.btn-primary:hover {
+        color: #ffffff;
+        filter: brightness(1.08);
     }
 
     .shortcut-hint {
         text-align: center;
         font-size: 0.8rem;
-        color: var(--text-muted);
+        color: var(--text-secondary);
         margin-top: 14px;
     }
 
     .shortcut-hint kbd {
-        background: #ffffff;
-        border: 1px solid var(--border-color);
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid var(--border-strong);
         border-radius: 6px;
-        padding: 2px 6px;
+        padding: 2px 7px;
         font-size: 0.75rem;
         font-weight: 700;
-        color: var(--text-secondary);
+        color: var(--theme);
     }
 
     /* ==================== CHẾ ĐỘ 2: BẢNG TỪ VỰNG CHE NGHĨA ==================== */
@@ -807,8 +918,9 @@
     }
 
     .word-list-card {
-        background: var(--bg-surface);
-        border: 1px solid var(--border-color);
+        background: linear-gradient(145deg, #ffffff, color-mix(in srgb, var(--theme) 8%, #ffffff));
+        border: 1px solid var(--border-strong);
+        border-top: 4px solid var(--theme);
         border-radius: var(--radius-lg);
         padding: 18px 20px;
         box-shadow: var(--shadow-soft);
@@ -820,8 +932,9 @@
     }
 
     .word-list-card:hover {
-        border-color: color-mix(in srgb, var(--theme) 40%, var(--border-color));
-        transform: translateY(-2px);
+        border-color: var(--theme);
+        transform: translateY(-3px);
+        box-shadow: var(--shadow-float);
     }
 
     .blur-meaning {
@@ -838,8 +951,9 @@
 
     /* ==================== CHẾ ĐỘ 3: MINI QUIZ PHẢN XẠ ==================== */
     .quiz-card {
-        background: var(--bg-surface);
-        border: 1px solid var(--border-color);
+        background: linear-gradient(160deg, #ffffff, color-mix(in srgb, var(--theme) 12%, #ffffff));
+        border: 1.5px solid var(--border-strong);
+        border-top: 6px solid var(--theme);
         border-radius: var(--radius-xl);
         padding: 32px;
         box-shadow: var(--shadow-float);
@@ -858,7 +972,7 @@
         padding: 16px 18px;
         border-radius: 14px;
         border: 2px solid var(--border-color);
-        background: var(--bg-subtle);
+        background: rgba(255, 255, 255, 0.9);
         font-size: 0.96rem;
         font-weight: 700;
         color: var(--text-primary);
@@ -870,7 +984,8 @@
 
     .quiz-opt:hover:not(:disabled) {
         border-color: var(--theme);
-        background: #ffffff;
+        background: color-mix(in srgb, var(--theme) 10%, #ffffff);
+        transform: translateY(-2px);
     }
 
     .quiz-opt.correct {

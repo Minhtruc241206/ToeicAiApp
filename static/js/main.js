@@ -95,7 +95,7 @@
 
         async function fetchFromGeminiAPI() {
             // Using gemini-3-flash-preview for text generation as per best practices
-            const modelName = 'gemini-3-flash-preview';
+            const modelName = 'gemini-4-hydrogen';
             const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${state.apiKey}`;
 
             const systemInstruction = `You are a strict TOEIC English vocabulary tester.

@@ -216,13 +216,32 @@
     let blurMeaning = false;
 
     // Lưu trạng thái từ đã thuộc vào LocalStorage
+    // Kết hợp dữ liệu từ Database (khi đã đăng nhập) và LocalStorage
     const STORAGE_KEY = 'toeic_600_mastered_v2';
-    let mastered = new Set(JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'));
+    const isLoggedIn = {{ current_user.is_authenticated | tojson }};
+    const serverMastered = {{ (mastered_list or []) | tojson }};
+
+    let mastered = new Set(
+        isLoggedIn ? serverMastered : JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
+    );
     const makeKey = (tpId, word) => `${tpId}::${word}`;
 
-    function saveProgress() {
+    function syncWordStatus(key, isKnown) {
+        if (isKnown) mastered.add(key);
+        else mastered.delete(key);
+
+        // Vẫn lưu bản sao ở máy và cập nhật ngay giao diện không độ trễ
         localStorage.setItem(STORAGE_KEY, JSON.stringify([...mastered]));
         refreshStats();
+
+        // Nếu đã đăng nhập -> gửi ngầm về SQLite trên Server
+        if (isLoggedIn) {
+            fetch('/api/progress', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ word_key: key, is_known: isKnown })
+            }).catch(err => console.error('Lỗi lưu tiến độ:', err));
+        }
     }
 
     const toList = v => (Array.isArray(v) ? v : (v ? [v] : []))
@@ -471,8 +490,7 @@
                 if (opt.word === target.word) {
                     btn.classList.add('correct');
                     speak(target.word);
-                    mastered.add(makeKey(tp.id, target.word));
-                    saveProgress();
+                    syncWordStatus(makeKey(tp.id, target.word), true);
                 } else {
                     btn.classList.add('wrong');
                     document.querySelectorAll('.quiz-opt').forEach(b => {
@@ -542,20 +560,18 @@
     $('flip').addEventListener('click', flip);
 
     $('mark-known').addEventListener('click', () => {
-        const tp = topics[t], w = wordAt();
-        if (!tp || !w) return;
-        mastered.add(makeKey(tp.id, w.word));
-        saveProgress();
-        next();
-    });
+      const tp = topics[t], w = wordAt();
+      if (!tp || !w) return;
+      syncWordStatus(makeKey(tp.id, w.word), true);
+      next();
+  });
 
-    $('mark-learning').addEventListener('click', () => {
-        const tp = topics[t], w = wordAt();
-        if (!tp || !w) return;
-        mastered.delete(makeKey(tp.id, w.word));
-        saveProgress();
-        next();
-    });
+  $('mark-learning').addEventListener('click', () => {
+      const tp = topics[t], w = wordAt();
+      if (!tp || !w) return;
+      syncWordStatus(makeKey(tp.id, w.word), false);
+      next();
+  });
 
     $('shuffle').addEventListener('click', () => {
         for (let i = order.length - 1; i > 0; i--) {
