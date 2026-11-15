@@ -4,12 +4,23 @@ from flask import Flask, json
 from flask_login import UserMixin
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Column, Integer, String, Double, ForeignKey, true, Boolean
+from dotenv import load_dotenv
 
-app = Flask(__name__)
+# ----------sqlite
 basedir = os.path.abspath(os.path.dirname(__file__))
-app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(basedir, "toeic.db")
-app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
+load_dotenv(os.path.join(basedir, ".env"))
+# app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///" + os.path.join(basedir, "toeicXOANAY.db")
+app = Flask(__name__)
+# --mysql worbech
+# app.config["SQLALCHEMY_DATABASE_URI"] ="mysql+pymysql://root:root@localhost/toeic?charset=utf8mb4"
+# app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = True
 
+
+
+# ---AIvensql
+app.config["SQLALCHEMY_DATABASE_URI"] = os.getenv("DATABASE_URL")
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {"pool_pre_ping": True, "pool_recycle": 280}
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 db = SQLAlchemy(app)
 
 class User(db.Model,UserMixin):
@@ -99,7 +110,7 @@ if __name__=='__main__':
         #                 word_family=family_str
         #             )
         #             db.session.add(word)
-        #
-        # # Lưu tất cả thay đổi vào Database
+
+        # Lưu tất cả thay đổi vào Database
         db.session.commit()
         print("Đã import thành công 50 chủ đề và 600 từ vựng vào Database!")

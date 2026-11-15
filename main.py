@@ -3,7 +3,7 @@ import os
 from dotenv import load_dotenv
 from flask_login import LoginManager, login_user, current_user,login_required
 from authlib.integrations.flask_client import OAuth
-from model import User, db, app, Word, Topic
+from model import User, db, app, Word, Topic ,UserWord
 import dao
 from flask_admin import Admin
 from flask_admin.contrib.sqla import ModelView
@@ -21,6 +21,7 @@ class AuthenticatedView(ModelView):
 admin.add_view(AuthenticatedView(User, db.session))
 admin.add_view(AuthenticatedView(Topic, db.session))
 admin.add_view(AuthenticatedView(Word, db.session))
+admin.add_view(AuthenticatedView(UserWord, db.session))
 
 google = oauth.register(
     name='google',
