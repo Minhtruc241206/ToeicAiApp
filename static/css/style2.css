@@ -1,7 +1,6 @@
-
-    :root {
+:root {
+        /* Cố định 1 màu Tím Indigo đồng bộ với Header của trang web */
         --theme: #6366f1;
-        /* Tự động pha màu nền và viền theo màu chủ đề (--theme) */
         --bg-page: color-mix(in srgb, var(--theme) 9%, #f1f5f9);
         --bg-surface: color-mix(in srgb, var(--theme) 4%, #ffffff);
         --bg-subtle: color-mix(in srgb, var(--theme) 8%, #f8fafc);
@@ -30,7 +29,7 @@
         box-sizing: border-box;
     }
 
-    /* Nền Aurora đa sắc chuyển màu mượt theo từng chủ đề */
+    /* Nền Aurora giữ cố định tông Tím Indigo */
     .vocab-studio {
         font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
         background:
@@ -41,9 +40,10 @@
         min-height: calc(100vh - 60px);
         color: var(--text-primary);
         display: grid;
-        grid-template-columns: 340px 1fr;
+        grid-template-columns: 340px minmax(0, 1fr);
+        width: 100%;
+        max-width: 100%;
         position: relative;
-        transition: background 0.45s ease;
     }
 
     .is-hidden {
@@ -53,8 +53,8 @@
     /* ==================== SIDEBAR CHỦ ĐỀ ==================== */
     .vs-sidebar {
         background: linear-gradient(180deg,
-            color-mix(in srgb, var(--theme) 8%, rgba(255, 255, 255, 0.92)),
-            rgba(255, 255, 255, 0.95));
+            color-mix(in srgb, var(--theme) 8%, rgba(255, 255, 255, 0.96)),
+            rgba(255, 255, 255, 0.98));
         backdrop-filter: blur(20px);
         border-right: 1px solid var(--border-color);
         height: 100vh;
@@ -63,12 +63,12 @@
         display: flex;
         flex-direction: column;
         z-index: 40;
-        transition: background 0.35s ease, border-color 0.35s ease;
     }
 
     .vs-sidebar-top {
         padding: 20px 18px 14px;
         border-bottom: 1px solid var(--border-color);
+        flex-shrink: 0;
     }
 
     /* Thẻ tổng quan tiến độ 600 từ */
@@ -165,6 +165,7 @@
     .topic-list {
         flex: 1;
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
         padding: 10px 12px 24px;
         display: flex;
         flex-direction: column;
@@ -192,6 +193,7 @@
         cursor: pointer;
         transition: all 0.2s ease;
         font-family: inherit;
+        flex-shrink: 0;
     }
 
     .topic-item:hover {
@@ -272,11 +274,14 @@
         padding: 24px 32px 60px;
         display: flex;
         justify-content: center;
+        min-width: 0;
+        width: 100%;
     }
 
     .vs-container {
         width: 100%;
         max-width: 860px;
+        min-width: 0;
     }
 
     /* Thanh điều hướng trên cùng */
@@ -365,7 +370,7 @@
         color: #ffffff;
     }
 
-    /* Banner Chủ đề hiện tại - Nhuộm màu Gradient theo chủ đề */
+    /* Banner Chủ đề hiện tại */
     .topic-banner {
         background: linear-gradient(135deg,
             color-mix(in srgb, var(--theme) 18%, #ffffff) 0%,
@@ -376,7 +381,8 @@
         padding: 20px 24px;
         box-shadow: var(--shadow-soft);
         margin-bottom: 16px;
-        transition: all 0.35s ease;
+        width: 100%;
+        overflow: hidden;
     }
 
     .banner-row {
@@ -454,7 +460,9 @@
         display: flex;
         gap: 6px;
         overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
         padding-bottom: 4px;
+        width: 100%;
     }
 
     .word-ribbon::-webkit-scrollbar {
@@ -480,6 +488,7 @@
         display: inline-flex;
         align-items: center;
         gap: 5px;
+        flex-shrink: 0;
     }
 
     .ribbon-item:hover {
@@ -605,6 +614,7 @@
         transition: all 0.2s ease;
         box-shadow: var(--shadow-soft);
         font-size: 1rem;
+        flex-shrink: 0;
     }
 
     .circle-btn svg {
@@ -630,13 +640,14 @@
     }
 
     .hero-word {
-        font-size: clamp(2.4rem, 4.5vw, 3.4rem);
+        font-size: clamp(2.2rem, 4.5vw, 3.4rem);
         font-weight: 800;
         letter-spacing: -0.03em;
         background: linear-gradient(135deg, #0f172a 20%, var(--theme) 100%);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
         line-height: 1.18;
+        word-break: break-word;
     }
 
     .hero-meta {
@@ -680,6 +691,8 @@
         font-size: 0.85rem;
         color: var(--text-secondary);
         font-weight: 500;
+        gap: 8px;
+        flex-wrap: wrap;
     }
 
     /* Mặt sau thẻ: Mỗi ô Bento mang một sắc thái Pastel riêng biệt */
@@ -913,7 +926,7 @@
 
     .word-cards-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
         gap: 14px;
     }
 
@@ -1000,27 +1013,37 @@
         color: #9f1239;
     }
 
-    /* ==================== RESPONSIVE ==================== */
+    /* ==================== RESPONSIVE ĐIỆN THOẠI & TABLET ==================== */
     .vs-backdrop {
         display: none;
     }
 
     @media (max-width: 960px) {
+        html, body {
+            max-width: 100%;
+            overflow-x: hidden;
+        }
         .vocab-studio {
-            grid-template-columns: 1fr;
+            display: block;
+            width: 100%;
+            overflow-x: hidden;
         }
         .mobile-menu-btn {
             display: inline-flex;
         }
+        /* Sửa lỗi Sidebar bị cắt cụt ở Chủ đề 05 và bị Header đè lên trên điện thoại */
         .vs-sidebar {
             position: fixed;
             left: 0;
             top: 0;
             bottom: 0;
-            width: 320px;
-            transform: translateX(-100%);
+            width: min(86vw, 320px);
+            height: 100dvh;
+            max-height: 100dvh;
+            z-index: 99999;
+            transform: translateX(-105%);
             transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-            box-shadow: 20px 0 40px rgba(15, 23, 42, 0.15);
+            box-shadow: 20px 0 40px rgba(15, 23, 42, 0.25);
         }
         .vs-sidebar.open {
             transform: translateX(0);
@@ -1029,12 +1052,15 @@
             display: block;
             position: fixed;
             inset: 0;
-            background: rgba(15, 23, 42, 0.4);
+            background: rgba(15, 23, 42, 0.45);
             backdrop-filter: blur(3px);
-            z-index: 35;
+            z-index: 99990;
         }
         .vs-main {
-            padding: 18px 14px 48px;
+            padding: 16px 12px 48px;
+        }
+        .card-face {
+            padding: 22px 18px;
         }
         .bento-grid-2,
         .quiz-options {
@@ -1043,7 +1069,10 @@
         .action-bar {
             grid-template-columns: 1fr 1fr;
         }
+        #next {
+            grid-column: span 2;
+        }
         .flashcard-3d {
-            min-height: 460px;
+            min-height: 450px;
         }
     }

@@ -1,8 +1,5 @@
-{% extends 'Layout/base.html' %}
-{% block content %}
-
-
-
+{%extends 'Layout/base.html'%}
+{%block content%}
 <div class="vocab-studio" id="app">
     <!-- ==================== SIDEBAR: 50 CHỦ ĐỀ & TIẾN ĐỘ ==================== -->
     <aside class="vs-sidebar" id="sidebar">
@@ -202,8 +199,18 @@
 </div>
 
 <script>
+    // Tự động chuẩn hóa tỷ lệ hiển thị trên màn hình điện thoại Android / iPhone
+    (function () {
+        let vp = document.querySelector('meta[name="viewport"]');
+        if (!vp) {
+            vp = document.createElement('meta');
+            vp.name = 'viewport';
+            document.head.appendChild(vp);
+        }
+        vp.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+    })();
+
     const topics = {{ topic | tojson }};
-    const THEME_COLORS = ['#6366f1', '#0ea5e9', '#10b981', '#8b5cf6', '#ec4899', '#f59e0b', '#14b8a6'];
     const $ = id => document.getElementById(id);
     const card = $('card');
     const links = document.querySelectorAll('.topic-item');
@@ -215,8 +222,7 @@
     let currentMode = 'flashcard';
     let blurMeaning = false;
 
-    // Lưu trạng thái từ đã thuộc vào LocalStorage
-    // Kết hợp dữ liệu từ Database (khi đã đăng nhập) và LocalStorage
+    // Giữ nguyên 100% logic lưu tiến độ của bạn
     const STORAGE_KEY = 'toeic_600_mastered_v2';
     const isLoggedIn = {{ current_user.is_authenticated | tojson }};
     const serverMastered = {{ (mastered_list or []) | tojson }};
@@ -230,11 +236,9 @@
         if (isKnown) mastered.add(key);
         else mastered.delete(key);
 
-        // Vẫn lưu bản sao ở máy và cập nhật ngay giao diện không độ trễ
         localStorage.setItem(STORAGE_KEY, JSON.stringify([...mastered]));
         refreshStats();
 
-        // Nếu đã đăng nhập -> gửi ngầm về SQLite trên Server
         if (isLoggedIn) {
             fetch('/api/progress', {
                 method: 'POST',
@@ -258,7 +262,6 @@
         return [];
     }
 
-    // Hiệu ứng chuyển từ nhẹ nhàng
     function animateSlide(dir = 1) {
         if (!card.animate) return;
         card.animate([
@@ -267,13 +270,40 @@
         ], { duration: 240, easing: 'cubic-bezier(0.22, 1, 0.36, 1)' });
     }
 
+    // Hệ thống phát âm hỗ trợ đầy đủ cho điện thoại Android, iPad và PC
+    const ttsAudio = new Audio();
     function speak(text, rate = 0.92) {
-        if (!text || !('speechSynthesis' in window)) return;
-        speechSynthesis.cancel();
-        const u = new SpeechSynthesisUtterance(text);
-        u.lang = accent;
-        u.rate = rate;
-        speechSynthesis.speak(u);
+        if (!text) return;
+        const cleanText = text.trim();
+        const voiceType = accent === 'en-GB' ? 1 : 2; // 2: Giọng US, 1: Giọng UK
+        const audioUrl = `https://dict.youdao.com/dictvoice?audio=${encodeURIComponent(cleanText)}&type=${voiceType}`;
+
+        try {
+            ttsAudio.pause();
+            ttsAudio.src = audioUrl;
+            ttsAudio.playbackRate = rate < 0.8 ? 0.72 : 1.0;
+            const playPromise = ttsAudio.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(() => {
+                    if ('speechSynthesis' in window) {
+                        window.speechSynthesis.cancel();
+                        const u = new SpeechSynthesisUtterance(cleanText);
+                        u.lang = accent;
+                        u.rate = rate;
+                        window.speechSynthesis.speak(u);
+                    }
+                });
+                return;
+            }
+        } catch (e) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const u = new SpeechSynthesisUtterance(cleanText);
+                u.lang = accent;
+                u.rate = rate;
+                window.speechSynthesis.speak(u);
+            }
+        }
     }
 
     function fillChips(el, list) {
@@ -413,7 +443,6 @@
         }
     }
 
-    // Chế độ 2: Render danh sách 12 từ
     function renderListMode() {
         const grid = $('list-grid');
         grid.replaceChildren();
@@ -453,7 +482,6 @@
         });
     }
 
-    // Chế độ 3: Mini Quiz phản xạ nhanh 4 đáp án
     let quizIdx = 0;
     function renderQuizQuestion() {
         const tp = topics[t];
@@ -466,7 +494,6 @@
         $('quiz-ipa').textContent = `${target.ipa || ''} · (${target.pos || ''})`;
         $('quiz-next-btn').classList.add('is-hidden');
 
-        // Tạo 3 đáp án nhiễu từ các từ khác trong chủ đề
         const pool = words.filter(x => x.word !== target.word);
         for (let i = pool.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -520,7 +547,7 @@
         const tp = topics[t];
         order = (tp.words || []).map((_, k) => k);
         c = 0;
-        $('app').style.setProperty('--theme', THEME_COLORS[t % THEME_COLORS.length]);
+        // Giữ cố định 1 tông màu Tím Indigo phù hợp với trang web (không đổi màu theo chủ đề nữa)
 
         links.forEach(l => l.classList.toggle('active', +l.dataset.index === t));
         if (links[t]) links[t].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
@@ -560,18 +587,18 @@
     $('flip').addEventListener('click', flip);
 
     $('mark-known').addEventListener('click', () => {
-      const tp = topics[t], w = wordAt();
-      if (!tp || !w) return;
-      syncWordStatus(makeKey(tp.id, w.word), true);
-      next();
-  });
+        const tp = topics[t], w = wordAt();
+        if (!tp || !w) return;
+        syncWordStatus(makeKey(tp.id, w.word), true);
+        next();
+    });
 
-  $('mark-learning').addEventListener('click', () => {
-      const tp = topics[t], w = wordAt();
-      if (!tp || !w) return;
-      syncWordStatus(makeKey(tp.id, w.word), false);
-      next();
-  });
+    $('mark-learning').addEventListener('click', () => {
+        const tp = topics[t], w = wordAt();
+        if (!tp || !w) return;
+        syncWordStatus(makeKey(tp.id, w.word), false);
+        next();
+    });
 
     $('shuffle').addEventListener('click', () => {
         for (let i = order.length - 1; i > 0; i--) {
@@ -645,4 +672,5 @@
     const start = m ? topics.findIndex(x => String(x.id) === m[1]) : 0;
     loadTopic(start >= 0 ? start : 0, false);
 </script>
-{% endblock %}
+
+{%endblock%}
